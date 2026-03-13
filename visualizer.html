@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stem Visualizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c28;
+      --border: #2a2a3a;
+      --accent: #7b6cf6;
+      --accent2: #f06caa;
+      --text: #e0e0f0;
+      --muted: #666688;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    #loader h1 {
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+    }
+    #drop-zone {
+      width: 560px;
+      max-width: 100%;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    #drop-zone:hover, #drop-zone.over {
+      border-color: var(--accent);
+      background: rgba(123,108,246,0.06);
+    }
+    #drop-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    #drop-zone .icon { font-size: 32px; margin-bottom: 10px; }
+    #drop-zone p { color: var(--muted); line-height: 1.6; }
+    #drop-zone strong { color: var(--text); }
+
+    /* ── STEM LIST ── */
+    #stem-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 560px;
+      max-width: 100%;
+    }
+    .stem-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .stem-row-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+    }
+    .stem-row-top .filename {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .stem-row-top select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .stem-row-top select:focus { outline: none; border-color: var(--accent); }
+    .stem-row-top .remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .stem-row-top .remove:hover { color: var(--accent2); }
+    .stem-row-asset {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .asset-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .asset-thumb img, .asset-thumb video { width: 100%; height: 100%; object-fit: cover; }
+    .asset-label {
+      flex: 1;
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .asset-pick-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .asset-pick-btn:hover { border-color: var(--accent); color: var(--text); }
+    .asset-pick-btn input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .asset-clear-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: 14px; cursor: pointer; padding: 2px 4px;
+      border-radius: 4px; transition: color 0.15s; display: none;
+    }
+    .asset-clear-btn.visible { display: block; }
+    .asset-clear-btn:hover { color: var(--accent2); }
+
+    #launch-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 48px;
+      font-family: inherit;
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    #launch-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    #launch-btn:not(:disabled):hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ── VISUALIZER ── */
+    #visualizer {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      position: relative;
+    }
+    #canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #canvas-wrap canvas { display: block; }
+
+    /* ── TRANSPORT ── */
+    #transport {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(10,10,15,0.92);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    #transport button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 13px;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    #transport button:hover { border-color: var(--accent); }
+    #transport button#play-pause { min-width: 68px; }
+    #transport button#rec-btn { border-color: #c04040; color: #f08080; }
+    #transport button#rec-btn.recording {
+      background: #3a1010; border-color: #f04040; color: #ff8080;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.5; } }
+
+    #stem-meters {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      overflow-x: auto;
+      padding: 2px 0;
+      min-width: 0;
+    }
+    .meter-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-width: 36px;
+    }
+    .meter-cell .label {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      max-width: 36px;
+      overflow: hidden;
+    }
+    .meter-bar-wrap {
+      width: 7px; height: 36px;
+      background: var(--surface);
+      border-radius: 4px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .meter-bar-fill { width: 100%; border-radius: 4px; }
+
+    /* ── CONFIG PANEL ── */
+    #cfg-panel {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 260px;
+      background: rgba(13,13,22,0.94);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    #cfg-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; cursor: pointer; user-select: none;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px; letter-spacing: 0.1em; color: var(--muted);
+    }
+    #cfg-header:hover { color: var(--text); }
+    #cfg-header span { color: var(--accent); font-size: 13px; }
+    #cfg-body { padding: 14px; display: flex; flex-direction: column; gap: 13px; }
+    #cfg-body.hidden { display: none; }
+    .cfg-group { display: flex; flex-direction: column; gap: 6px; }
+    .cfg-label {
+      font-size: 10px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.09em;
+      display: flex; justify-content: space-between;
+    }
+    .cfg-label .val { color: var(--text); }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 3px; border-radius: 2px;
+      background: var(--border); outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 13px; height: 13px; border-radius: 50%;
+      background: var(--accent); border: none; cursor: pointer;
+    }
+    .palette-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .palette-btn {
+      background: none; border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 8px;
+      font-family: inherit; font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.06em;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .palette-btn:hover, .palette-btn.active { border-color: var(--accent); color: var(--text); }
+    .cfg-divider { height: 1px; background: var(--border); margin: 0 -14px; }
+
+    /* ── TOAST ── */
+    #rec-toast {
+      position: fixed; bottom: 76px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(20,10,10,0.92); border: 1px solid #c04040;
+      color: #ff9090; font-size: 11px; letter-spacing: 0.08em;
+      padding: 8px 18px; border-radius: 8px;
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.25s, transform 0.25s; z-index: 200;
+    }
+    #rec-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      #loader {
+        gap: 18px;
+        padding: 24px 14px;
+        justify-content: flex-start;
+        padding-top: 40px;
+      }
+      #loader h1 { font-size: 17px; }
+
+      #drop-zone { padding: 22px 16px; border-radius: 12px; }
+      #drop-zone .icon { font-size: 26px; }
+      #drop-zone p { font-size: 12px; }
+
+      /* Asset row stacks vertically on narrow screens */
+      .stem-row-asset { flex-wrap: wrap; }
+      .asset-label { width: 100%; order: -1; }
+
+      /* Bigger touch targets for selects and buttons */
+      .stem-row-top select { padding: 7px 8px; font-size: 13px; }
+      .stem-row-top .remove { font-size: 18px; padding: 6px 8px; }
+
+      #launch-btn { padding: 14px 32px; width: 100%; max-width: 320px; }
+
+      /* Config panel: full width at top, collapsed by default */
+      #cfg-panel {
+        top: 8px; right: 8px; left: 8px;
+        width: auto;
+      }
+
+      /* Transport: larger touch targets */
+      #transport { padding: 8px 10px; gap: 8px; }
+      #transport button { padding: 10px 14px; font-size: 12px; }
+
+      /* Bigger range thumb for touch */
+      input[type=range] { height: 4px; }
+      input[type=range]::-webkit-slider-thumb { width: 22px; height: 22px; }
+      input[type=range]::-moz-range-thumb { width: 22px; height: 22px; }
+
+      /* Safe area bottom for notched phones */
+      #transport { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+      #rec-toast { bottom: max(76px, calc(60px + env(safe-area-inset-bottom))); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOADER ══════════════ -->
+<div id="loader">
+  <h1>STEM VISUALIZER</h1>
+  <div id="drop-zone">
+    <input type="file" id="file-input" multiple accept="audio/*" />
+    <div class="icon">🎛</div>
+    <p><strong>Drop audio stems here</strong><br/>or click to browse<br/><span style="font-size:11px">MP3 · WAV · FLAC · OGG · M4A</span></p>
+  </div>
+  <div id="stem-list"></div>
+  <button id="launch-btn" disabled>LAUNCH</button>
+</div>
+
+<!-- ══════════════ VISUALIZER ══════════════ -->
+<div id="visualizer">
+  <div id="canvas-wrap">
+    <div id="cfg-panel">
+      <div id="cfg-header">PARAMETERS <span id="cfg-toggle">▾</span></div>
+      <div id="cfg-body">
+        <div class="cfg-group">
+          <div class="cfg-label">Sensitivity <span class="val" id="lbl-sensitivity">1.00</span></div>
+          <input type="range" id="sl-sensitivity" min="0.2" max="3.0" step="0.05" value="1.0" />
+        </div>
+        <div class="cfg-group">
+          <div class="cfg-label">Lerp Smoothing <span class="val" id="lbl-lerp">0.15</span></div>
+          <input type="range" id="sl-lerp" min="0.01" max="0.6" step="0.01" value="0.15" />
+        </div>
+        <div class="cfg-group">
+          <div class="cfg-label">Spring Stiffness <span class="val" id="lbl-stiff">0.18</span></div>
+          <input type="range" id="sl-stiff" min="0.02" max="0.6" step="0.01" value="0.18" />
+        </div>
+        <div class="cfg-group">
+          <div class="cfg-label">Spring Damping <span class="val" id="lbl-damp">0.72</span></div>
+          <input type="range" id="sl-damp" min="0.3" max="0.98" step="0.01" value="0.72" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="transport">
+    <button id="back-btn">← BACK</button>
+    <button id="play-pause">PLAY</button>
+    <button id="rec-btn">⏺ REC</button>
+    <div id="stem-meters"></div>
+  </div>
+</div>
+
+<div id="rec-toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STEM TYPES
+// ─────────────────────────────────────────────
+const STEM_TYPES = ['kick','snare','hi-hat','bass','synth','perc','vox','other'];
+
+// ─────────────────────────────────────────────
+//  HEAD POSE + COLOR SYSTEM
+// ─────────────────────────────────────────────
+const EMIT_THRESHOLD = 0.018;
+
+// Bubblegum Bliss palette — one color per non-kick stem
+const STEM_COLORS_3D = {
+  snare:   0xFFA5D6,  // hot pink
+  'hi-hat':0xFFD6EE,  // soft pink
+  bass:    0xA7ABDE,  // periwinkle
+  synth:   0xCED1F8,  // lavender blue
+  perc:    0xECD2E0,  // dusty rose
+  vox:     0xFFF0F1,  // near white blush
+  other:   0xFFD6EE,  // soft pink fallback
+  kick:    0x80E080,  // green
+};
+
+// Each stem type drives the head to a distinct pose.
+// rotX/Y/Z in radians, posY vertical offset.
+const STEM_POSES = {
+  // kick has no pose — vibration only
+  snare:   { rotX: -0.25, rotY:  1.20, rotZ:  0.20 }, // hard right, chin up
+  'hi-hat':{ rotX:  0.60, rotY: -0.85, rotZ: -0.18 }, // down-left, chin dropped
+  bass:    { rotX:  0.45, rotY:  0.55, rotZ:  0.35 }, // forward-right, heavy
+  synth:   { rotX: -0.65, rotY: -1.10, rotZ:  0.08 }, // up-left, dramatic lean
+  perc:    { rotX:  0.20, rotY:  1.40, rotZ: -0.30 }, // hard right snap, tilt
+  vox:     { rotX: -0.50, rotY:  0.30, rotZ:  0.40 }, // back, rolled, tilted
+  other:   { rotX:  0.30, rotY: -1.20, rotZ: -0.15 }, // hard left, chin slightly down
+  kick:    { rotX:  0.00, rotY:  0.00, rotZ:  0.00 }, // unused — vibration only
+};
+
+// ─────────────────────────────────────────────
+//  METER COLORS (transport bar)
+// ─────────────────────────────────────────────
+const STEM_COLORS = {
+  kick:    '#8855ee',
+  snare:   '#f040a0',
+  'hi-hat':'#e8a030',
+  bass:    '#30d4a0',
+  synth:   '#4090f0',
+  perc:    '#f05518',
+  vox:     '#f03060',
+  other:   '#60e040',
+};
+
+// ─────────────────────────────────────────────
+//  LIVE CONFIG
+// ─────────────────────────────────────────────
+const CFG = {
+  sensitivity: 1.0,
+  lerp:        0.15,
+  stiffness:   0.10,
+  damping:     0.72,
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let pendingFiles  = [];   // persists across back/forward
+let stems         = [];
+let audioCtx      = null;
+let threeInstance = null;
+let playing       = false;
+let startOffset   = 0;
+let startTime     = 0;
+let mediaRecorder = null;
+let recChunks     = [];
+let recDestNode   = null;
+
+// ─────────────────────────────────────────────
+//  CONFIG PANEL
+// ─────────────────────────────────────────────
+function bindSlider(id, key, dec = 2) {
+  const sl  = document.getElementById(id);
+  const lbl = document.getElementById('lbl-' + id.slice(3));
+  sl.addEventListener('input', () => {
+    const v = parseFloat(sl.value);
+    CFG[key] = v;
+    lbl.textContent = v.toFixed(dec);
+  });
+}
+bindSlider('sl-sensitivity', 'sensitivity');
+bindSlider('sl-lerp',        'lerp');
+bindSlider('sl-stiff',       'stiffness');
+bindSlider('sl-damp',        'damping');
+
+// Collapse config panel by default on mobile
+if (window.innerWidth <= 600) {
+  document.getElementById('cfg-body').classList.add('hidden');
+  document.getElementById('cfg-toggle').textContent = '▸';
+}
+document.getElementById('cfg-header').addEventListener('click', () => {
+  const body = document.getElementById('cfg-body');
+  body.classList.toggle('hidden');
+  document.getElementById('cfg-toggle').textContent =
+    body.classList.contains('hidden') ? '▸' : '▾';
+});
+
+// ─────────────────────────────────────────────
+//  AUTO-LAUNCH (hardcoded stems)
+// ─────────────────────────────────────────────
+const HARDCODED_STEMS = [
+  'earthling bass.wav',
+  'earthling dfeka.wav',
+  'earthling hihat.wav',
+  'earthling kick.wav',
+  'earthling pan gem.wav',
+  'earthling piano.wav',
+];
+
+async function autoLaunch() {
+  try {
+    // Fetch each file from the same folder as the HTML
+    const files = await Promise.all(HARDCODED_STEMS.map(async name => {
+      const res = await fetch(name);
+      if (!res.ok) throw new Error(`Could not load ${name}`);
+      const blob = await res.blob();
+      return new File([blob], name, { type: 'audio/wav' });
+    }));
+    addAudioFiles(files);
+
+    // Trigger launch automatically (needs user gesture for AudioContext —
+    // show a single tap-to-start screen instead of the full upload UI)
+    document.getElementById('loader').innerHTML = `
+      <h1>STEM VISUALIZER</h1>
+      <p style="color:var(--muted);font-size:13px;">Earthling · ${files.length} stems loaded</p>
+      <button id="launch-btn" style="
+        background:var(--accent);color:#fff;border:none;border-radius:10px;
+        padding:16px 52px;font-family:inherit;font-size:15px;letter-spacing:0.1em;cursor:pointer;">
+        TAP TO START
+      </button>`;
+    document.getElementById('launch-btn').addEventListener('click', async () => {
+      document.getElementById('launch-btn').textContent = 'LOADING…';
+      if (!audioCtx) {
+        audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
+        recDestNode = audioCtx.createMediaStreamDestination();
+      }
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      await Promise.all(pendingFiles.filter(p => !p.buffer).map(async p => {
+        const buf = await p.file.arrayBuffer();
+        p.buffer  = await audioCtx.decodeAudioData(buf);
+      }));
+      buildStemsFromPending();
+      buildMeterUI();
+      document.getElementById('loader').style.display     = 'none';
+      document.getElementById('visualizer').style.display = 'flex';
+      startThree();
+      playAll();
+    });
+  } catch(e) {
+    console.warn('Auto-launch failed, falling back to manual upload:', e);
+    // Falls through to normal upload UI
+  }
+}
+
+// ─────────────────────────────────────────────
+//  FILE LOADING UI
+// ─────────────────────────────────────────────
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+const stemListEl = document.getElementById('stem-list');
+const launchBtn  = document.getElementById('launch-btn');
+
+function guessType(name) {
+  name = name.toLowerCase();
+  if (/kick|bd|bass.?drum/.test(name))     return 'kick';
+  if (/snare|sd/.test(name))               return 'snare';
+  if (/hihat|hi.hat|hh|cymbal/.test(name)) return 'hi-hat';
+  if (/bass|sub/.test(name))               return 'bass';
+  if (/synth|lead|keys|pad/.test(name))    return 'synth';
+  if (/perc|clave|shaker|tamb/.test(name)) return 'perc';
+  if (/vox|vocal|voice/.test(name))        return 'vox';
+  return null; // unrecognised — caller will assign an unused type
+}
+
+function addAudioFiles(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|flac|m4a|aiff)$/i.test(f.name)) continue;
+    if (pendingFiles.find(p => p.file.name === f.name && p.file.size === f.size)) continue;
+    const guessed = guessType(f.name);
+    // If unrecognised, pick the first STEM_TYPE not already used by another file
+    const type = guessed || STEM_TYPES.find(t => !pendingFiles.some(p => p.type === t)) || 'other';
+    pendingFiles.push({ file: f, type, asset: null });
+  }
+  renderStemList();
+}
+
+function setAsset(idx, assetFile) {
+  if (pendingFiles[idx].asset) URL.revokeObjectURL(pendingFiles[idx].asset.url);
+  if (!assetFile) { pendingFiles[idx].asset = null; renderStemList(); return; }
+  const isVideo = assetFile.type.startsWith('video/');
+  const isImage = assetFile.type.startsWith('image/');
+  if (!isVideo && !isImage) return;
+  pendingFiles[idx].asset = {
+    file: assetFile,
+    url:  URL.createObjectURL(assetFile),
+    kind: isVideo ? 'video' : 'image',
+  };
+  renderStemList();
+}
+
+function renderStemList() {
+  stemListEl.innerHTML = '';
+  pendingFiles.forEach((stem, i) => {
+    const row = document.createElement('div');
+    row.className = 'stem-row';
+
+    const top = document.createElement('div');
+    top.className = 'stem-row-top';
+    top.innerHTML = `
+      <span class="filename" title="${stem.file.name}">${stem.file.name}</span>
+      <select data-i="${i}">
+        ${STEM_TYPES.map(t => `<option value="${t}"${t===stem.type?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <button class="remove" data-i="${i}">✕</button>`;
+    row.appendChild(top);
+
+    const assetRow = document.createElement('div');
+    assetRow.className = 'stem-row-asset';
+    const thumb = document.createElement('div');
+    thumb.className = 'asset-thumb';
+    if (stem.asset) {
+      thumb.innerHTML = stem.asset.kind === 'image'
+        ? `<img src="${stem.asset.url}" alt="" />`
+        : `<video src="${stem.asset.url}" muted></video>`;
+    } else {
+      thumb.textContent = '🖼';
+    }
+    const label = document.createElement('span');
+    label.className = 'asset-label';
+    label.textContent = stem.asset ? stem.asset.file.name : 'No asset';
+
+    const pickBtn = document.createElement('label');
+    pickBtn.className = 'asset-pick-btn';
+    pickBtn.textContent = 'ADD ASSET';
+    const assetInput = document.createElement('input');
+    assetInput.type = 'file';
+    assetInput.accept = 'image/*,video/*';
+    assetInput.addEventListener('change', () => {
+      if (assetInput.files[0]) setAsset(i, assetInput.files[0]);
+      assetInput.value = '';
+    });
+    pickBtn.appendChild(assetInput);
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'asset-clear-btn' + (stem.asset ? ' visible' : '');
+    clearBtn.textContent = '✕';
+    clearBtn.addEventListener('click', () => setAsset(i, null));
+
+    assetRow.append(thumb, label, pickBtn, clearBtn);
+    row.appendChild(assetRow);
+    stemListEl.appendChild(row);
+  });
+
+  stemListEl.querySelectorAll('select').forEach(s => {
+    s.addEventListener('change', e => { pendingFiles[+e.target.dataset.i].type = e.target.value; });
+  });
+  stemListEl.querySelectorAll('.remove').forEach(b => {
+    b.addEventListener('click', e => {
+      const idx = +e.currentTarget.dataset.i;
+      if (pendingFiles[idx].asset) URL.revokeObjectURL(pendingFiles[idx].asset.url);
+      pendingFiles.splice(idx, 1);
+      renderStemList();
+    });
+  });
+  launchBtn.disabled = pendingFiles.length === 0;
+}
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  addAudioFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => { addAudioFiles([...fileInput.files]); fileInput.value = ''; });
+
+// ─────────────────────────────────────────────
+//  LAUNCH
+// ─────────────────────────────────────────────
+launchBtn.addEventListener('click', async () => {
+  launchBtn.disabled = true;
+  launchBtn.textContent = 'LOADING…';
+
+  if (!audioCtx) {
+    audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
+    recDestNode = audioCtx.createMediaStreamDestination();
+  }
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+  // Decode only new files
+  await Promise.all(pendingFiles.filter(p => !p.buffer).map(async p => {
+    const buf = await p.file.arrayBuffer();
+    p.buffer  = await audioCtx.decodeAudioData(buf);
+  }));
+
+  buildStemsFromPending();
+  buildMeterUI();
+  document.getElementById('loader').style.display     = 'none';
+  document.getElementById('visualizer').style.display = 'flex';
+  startThree();
+  playAll();
+  launchBtn.textContent = 'LAUNCH';
+});
+
+function buildStemsFromPending() {
+  stems = pendingFiles.map(p => {
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.3;
+    return {
+      type:      p.type,
+      name:      p.file.name,
+      buffer:    p.buffer,
+      analyser,
+      source:    null,
+      lerpAmp:   0,
+      prev:      0,
+      lastFired: 0,
+    };
+  });
+}
+
+// ─────────────────────────────────────────────
+//  TRANSPORT
+// ─────────────────────────────────────────────
+function playAll() {
+  if (playing) return;
+  playing   = true;
+  startTime = audioCtx.currentTime;
+  stems.forEach(s => {
+    const src = audioCtx.createBufferSource();
+    src.buffer = s.buffer;
+    src.loop   = true;
+    src.connect(s.analyser);
+    s.analyser.connect(audioCtx.destination);
+    s.analyser.connect(recDestNode);
+    src.start(0, startOffset % s.buffer.duration);
+    s.source = src;
+  });
+  document.getElementById('play-pause').textContent = 'PAUSE';
+}
+
+function pauseAll() {
+  if (!playing) return;
+  playing      = false;
+  startOffset += audioCtx.currentTime - startTime;
+  stems.forEach(s => {
+    if (s.source) {
+      try { s.source.stop(); } catch(e) {}
+      try { s.analyser.disconnect(); } catch(e) {}
+      s.source = null;
+    }
+  });
+  document.getElementById('play-pause').textContent = 'PLAY';
+}
+
+document.getElementById('play-pause').addEventListener('click', () => {
+  if (playing) pauseAll(); else playAll();
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  stopRecording();
+  pauseAll();
+  if (threeInstance) { threeInstance.dispose(); threeInstance = null; }
+  stems       = [];
+  startOffset = 0;
+  document.getElementById('stem-meters').innerHTML    = '';
+  document.getElementById('visualizer').style.display = 'none';
+  document.getElementById('loader').style.display     = 'flex';
+  renderStemList();
+  launchBtn.disabled    = pendingFiles.length === 0;
+  launchBtn.textContent = 'LAUNCH';
+});
+
+// ─────────────────────────────────────────────
+//  METERS
+// ─────────────────────────────────────────────
+function buildMeterUI() {
+  const metersEl = document.getElementById('stem-meters');
+  metersEl.innerHTML = '';
+  stems.forEach((s, i) => {
+    const col  = STEM_COLORS[s.type] || '#aaa';
+    const cell = document.createElement('div');
+    cell.className = 'meter-cell';
+    cell.innerHTML = `
+      <div class="label">${s.type}</div>
+      <div class="meter-bar-wrap">
+        <div class="meter-bar-fill" style="background:${col};height:0%" id="meter-${i}"></div>
+      </div>`;
+    metersEl.appendChild(cell);
+    s.meterEl = cell.querySelector(`#meter-${i}`);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  VIDEO EXPORT
+// ─────────────────────────────────────────────
+function showToast(msg, dur = 3000) {
+  const t = document.getElementById('rec-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+}
+function startRecording() {
+  const canvas = document.querySelector('#canvas-wrap canvas');
+  if (!canvas || !recDestNode) return;
+  const combined = new MediaStream([
+    ...canvas.captureStream(60).getVideoTracks(),
+    ...recDestNode.stream.getAudioTracks(),
+  ]);
+  const mimeType = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  mediaRecorder = new MediaRecorder(combined, { mimeType, videoBitsPerSecond: 8_000_000 });
+  recChunks = [];
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recChunks, { type: mimeType });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: 'stem-visualizer-' + Date.now() + '.webm',
+    });
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('Recording saved.');
+  };
+  mediaRecorder.start(100);
+  document.getElementById('rec-btn').classList.add('recording');
+  document.getElementById('rec-btn').textContent = '⏹ STOP';
+  showToast('Recording started — audio + video', 2500);
+}
+function stopRecording() {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  mediaRecorder.stop();
+  mediaRecorder = null;
+  document.getElementById('rec-btn').classList.remove('recording');
+  document.getElementById('rec-btn').textContent = '⏺ REC';
+}
+document.getElementById('rec-btn').addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') stopRecording();
+  else startRecording();
+});
+
+// ─────────────────────────────────────────────
+//  AUDIO HELPER
+// ─────────────────────────────────────────────
+function getRMS(analyser) {
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteTimeDomainData(data);
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) {
+    const v = (data[i] - 128) / 128;
+    sum += v * v;
+  }
+  return Math.sqrt(sum / data.length);
+}
+
+// ─────────────────────────────────────────────
+//  THREE.JS HEAD VISUALIZER
+// ─────────────────────────────────────────────
+function startThree() {
+  if (threeInstance) { threeInstance.dispose(); threeInstance = null; }
+  threeInstance = buildThreeScene();
+}
+
+function buildThreeScene() {
+  const wrap = document.getElementById('canvas-wrap');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+
+  // ── Renderer ──
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(W, H);
+  renderer.setClearColor(0xeae8e5, 1);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+  wrap.appendChild(renderer.domElement);
+
+  // ── Scene + Camera ──
+  const scene  = new THREE.Scene();
+  scene.background = new THREE.Color(0xeae8e5);
+  scene.fog    = new THREE.FogExp2(0xeae8e5, 0.12);
+  const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+  camera.position.set(0, 0, 4.2);
+
+  // ── Lights ──
+  const ambLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambLight);
+
+  // Soft key from upper-right
+  const keyLight = new THREE.DirectionalLight(0xfff8f0, 0.8);
+  keyLight.position.set(3, 5, 2);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(2048, 2048);
+  keyLight.shadow.camera.near   = 0.5;
+  keyLight.shadow.camera.far    = 20;
+  keyLight.shadow.camera.left   = -3;
+  keyLight.shadow.camera.right  =  3;
+  keyLight.shadow.camera.top    =  3;
+  keyLight.shadow.camera.bottom = -3;
+  keyLight.shadow.radius = 4;
+  keyLight.shadow.bias   = -0.001;
+  scene.add(keyLight);
+
+  // Soft fill from left
+  const contraKey = new THREE.DirectionalLight(0xddeeff, 0.3);
+  contraKey.position.set(-4, 3, 1);
+  scene.add(contraKey);
+
+  // Rim from behind
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
+  rimLight.position.set(0, 1, -4);
+  scene.add(rimLight);
+
+  // Gentle warm uplight
+  const upLight = new THREE.SpotLight(0xffe8bb, 0.4);
+  upLight.position.set(0, -5, 1.5);
+  upLight.target.position.set(0, 0, 0);
+  upLight.angle    = Math.PI / 5;
+  upLight.penumbra = 0.9;
+  upLight.decay    = 1.0;
+  upLight.distance = 12;
+  scene.add(upLight);
+  scene.add(upLight.target);
+
+  // ── Head hierarchy ──
+  // pivot: centered on screen, rotated by spring
+  // model (child): offset so its base sits at pivot origin
+  const pivot = new THREE.Group();
+  pivot.position.set(0, 0, 0);  // dead center of screen
+  scene.add(pivot);
+  const head = pivot;  // spring code targets pivot via 'head' reference
+
+  const loader = new THREE.GLTFLoader();
+
+  // All mesh references collected after load — used for material swapping
+  const meshes = [];
+
+  function makeMat(hex) {
+    return new THREE.MeshBasicMaterial({
+      color: hex,
+      side:  THREE.DoubleSide,
+    });
+  }
+
+  const baseMat = makeMat(0xf0ece6);
+
+  loader.load('white_mesh.glb', (gltf) => {
+    const model = gltf.scene;
+
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.material      = baseMat;
+        child.castShadow    = true;
+        child.receiveShadow = true;
+        child.geometry.computeVertexNormals();
+        meshes.push(child);  // keep reference for later swaps
+      }
+    });
+
+    // Scale
+    const boxRaw = new THREE.Box3().setFromObject(model);
+    const sizeRaw = new THREE.Vector3();
+    boxRaw.getSize(sizeRaw);
+    const maxDim = Math.max(sizeRaw.x, sizeRaw.y, sizeRaw.z);
+    model.scale.setScalar(1.4 / maxDim);
+
+    // Measure after scale
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    // Child offset: X/Z centered, Y so base of model sits at pivot origin
+    // The pivot (parent) is at screen center — model hangs upward from there
+    const baseY = box.min.y;
+    model.position.set(-center.x, -baseY, -center.z);
+
+    // Shift pivot down by half the model height so model is visually centered
+    pivot.position.y = -(size.y * 0.5);
+
+    head.add(model);
+  });
+
+  // ── Pose spring state ──
+  const current = { rotX: 0, rotY: 0, rotZ: 0 };
+  const vel     = { rotX: 0, rotY: 0, rotZ: 0 };
+  let   target  = { rotX: 0, rotY: 0, rotZ: 0 };
+
+  // ── Kick shake state ──
+  let kickShake = null; // { born, duration, strength }
+
+  // ── Color flash state ──
+  let colorReturnTimer = null;
+
+  // ── Subtle idle animation offsets ──
+  let idleT = 0;
+
+  // ── Animation loop ──
+  let rafId;
+  let alive = true;
+
+  function animate() {
+    if (!alive) return;
+    rafId = requestAnimationFrame(animate);
+
+    // Poll audio stems
+    stems.forEach(s => {
+      const raw = getRMS(s.analyser) * CFG.sensitivity;
+      // Lerped value drives the meter display only
+      s.lerpAmp += (raw - s.lerpAmp) * CFG.lerp;
+      if (s.meterEl) s.meterEl.style.height = Math.min(100, s.lerpAmp * 220) + '%';
+
+      // Fire on upward crossing, with a 200ms minimum gap to prevent double-fires
+      const now = performance.now();
+      if (raw > EMIT_THRESHOLD && s.prev <= EMIT_THRESHOLD && now - s.lastFired > 200) {
+        s.lastFired = now;
+        if (s.type === 'kick') {
+          const strength = 0.06 + Math.random() * 0.14;
+          kickShake = { born: performance.now(), duration: 500, strength };
+          // Flash green
+          meshes.forEach(m => { m.material = makeMat(0x80E080); });
+          clearTimeout(colorReturnTimer);
+          colorReturnTimer = setTimeout(() => {
+            meshes.forEach(m => { m.material = baseMat; });
+          }, 300);
+        } else {
+          let pose;
+          if (s.type === 'synth') {
+            // Fully random facing on every synth hit
+            pose = {
+              rotX: (Math.random() - 0.5) * 1.4,
+              rotY: (Math.random() - 0.5) * 2.6,
+              rotZ: (Math.random() - 0.5) * 0.8,
+            };
+          } else {
+            const base = STEM_POSES[s.type] || STEM_POSES.other;
+            const jolt = 0.20;
+            pose = {
+              rotX: base.rotX + (Math.random() - 0.5) * jolt,
+              rotY: base.rotY + (Math.random() - 0.5) * jolt,
+              rotZ: base.rotZ + (Math.random() - 0.5) * jolt,
+            };
+          }
+          target = pose;
+          // Swap material immediately to stem color
+          const hex = STEM_COLORS_3D[s.type];
+          if (hex != null && meshes.length > 0) {
+            const mat = makeMat(hex);
+            meshes.forEach(m => { m.material = mat; });
+            // Return to base after 600ms
+            clearTimeout(colorReturnTimer);
+            colorReturnTimer = setTimeout(() => {
+              meshes.forEach(m => { m.material = baseMat; });
+            }, 600);
+          }
+        }
+      }
+      s.prev = raw;
+    });
+
+    // Spring physics toward target pose
+    const stiff = CFG.stiffness;
+    const damp  = CFG.damping;
+    ['rotX', 'rotY', 'rotZ'].forEach(k => {
+      vel[k] += (target[k] - current[k]) * stiff;
+      vel[k] *= damp;
+      current[k] += vel[k];
+    });
+
+    // Idle micro-sway
+    idleT += 0.008;
+    const idleX = Math.sin(idleT * 0.7)  * 0.012;
+    const idleY = Math.sin(idleT * 1.1)  * 0.008;
+    const idleZ = Math.sin(idleT * 0.55) * 0.006;
+
+    // Kick shake overlay — decaying oscillation on top of current pose
+    let shakeX = 0, shakeY = 0, shakeZ = 0;
+    if (kickShake) {
+      const t = (performance.now() - kickShake.born) / kickShake.duration;
+      if (t >= 1.0) {
+        kickShake = null;
+      } else {
+        const decay = 1 - t;
+        const freq  = 28;
+        const amp   = kickShake.strength * decay;
+        shakeX = Math.sin(t * freq * 1.0) * amp;
+        shakeY = Math.sin(t * freq * 1.3) * amp * 0.6;
+        shakeZ = Math.sin(t * freq * 0.8) * amp * 0.4;
+      }
+    }
+
+    head.rotation.x = current.rotX + idleX + shakeX;
+    head.rotation.y = current.rotY + idleY + shakeY;
+    head.rotation.z = current.rotZ + idleZ + shakeZ;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // ── Click / tap push interaction ──
+  function onPointerDown(e) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    // Normalised click position relative to canvas center (-1 → +1)
+    const nx = ((e.clientX - rect.left)  / rect.width  - 0.5) * 2;
+    const ny = ((e.clientY - rect.top)   / rect.height - 0.5) * 2;
+
+    // Push direction: click on left → head tilts left (rotY negative), etc.
+    // ny: click on top → head tilts back (rotX negative)
+    const pushAmt = 0.30; // ~17 degrees — strong enough to see clearly
+    const pushX =  ny * pushAmt;
+    const pushY =  nx * pushAmt;
+    const pushZ = -nx * ny * pushAmt * 0.5;
+
+    // Displace from current position — spring pulls back to target
+    current.rotX += pushX;
+    current.rotY += pushY;
+    current.rotZ += pushZ;
+    // Give it velocity in the same direction so it overshoots slightly
+    vel.rotX = pushX * 1.2;
+    vel.rotY = pushY * 1.2;
+    vel.rotZ = pushZ * 1.2;
+  }
+  renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
+  // ── Resize handler ──
+  function onResize() {
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  }
+  window.addEventListener('resize', onResize);
+
+  // ── Dispose ──
+  function dispose() {
+    alive = false;
+    cancelAnimationFrame(rafId);
+    clearTimeout(colorReturnTimer);
+    window.removeEventListener('resize', onResize);
+    renderer.domElement.removeEventListener('pointerdown', onPointerDown);
+    renderer.dispose();
+    if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
+  }
+
+  return { dispose };
+}
+
+// Try to auto-load hardcoded stems; falls back to manual upload UI on failure
+autoLaunch();
+</script>
+</body>
+</html>
