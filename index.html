@@ -59,7 +59,7 @@
       position: relative;
       overflow: hidden;
     }
-    #canvas-wrap canvas { display: block; }
+    #canvas-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
 
     /* ── CANVAS TEXT OVERLAYS ── */
     #txt-title, #txt-quote {
@@ -276,33 +276,37 @@
 
       /* Text: smaller, repositioned for portrait */
       #txt-title, #txt-title-white {
-        font-size: 14px;
-        top: 40%;
+        font-size: 13px;
+        top: 42%;
         right: auto;
-        left: 5%;
+        left: 10px;
       }
       #txt-quote, #txt-quote-white {
         font-size: 10px;
-        bottom: 24%;
-        right: 5%;
+        bottom: 22%;
+        right: 10px;
         left: auto;
-        width: 42%;
+        width: 48%;
       }
 
-      /* Transport: slim */
+      /* Transport: slim, always centered */
       #transport {
         height: 44px;
         padding: 4px 10px;
         padding-bottom: max(4px, env(safe-area-inset-bottom));
         gap: 6px;
+        justify-content: center;
+        flex-wrap: nowrap;
       }
       #transport button {
         padding: 6px 14px;
         font-size: 10px;
+        flex-shrink: 0;
       }
-      .meter-cell { min-width: 24px; }
-      .meter-cell .label { font-size: 7px; }
-      .meter-bar-wrap { width: 5px; height: 16px; }
+      .meter-cell { min-width: 20px; }
+      .meter-cell .label { font-size: 6px; }
+      .meter-bar-wrap { width: 4px; height: 14px; }
+      #stem-meters { flex: 1; min-width: 0; overflow-x: hidden; }
     }
   </style>
 </head>
@@ -785,7 +789,7 @@ function buildThreeScene() {
   // ── Renderer ──
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(W, H);
+  renderer.setSize(W, H, false);
   renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
@@ -1126,7 +1130,7 @@ function buildThreeScene() {
     const H = wrap.clientHeight;
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
-    renderer.setSize(W, H);
+    renderer.setSize(W, H, false);
   }
   window.addEventListener('resize', onResize);
 
