@@ -250,16 +250,56 @@
 
     /* ── MOBILE ── */
     @media (max-width: 600px) {
+      /* Config panel: compact, top strip */
       #cfg-panel {
-        top: 8px; right: 8px; left: 8px;
+        top: 6px; right: 6px; left: 6px;
         width: auto;
+        border-radius: 10px;
       }
-      #transport { padding: 8px 10px; gap: 8px; }
-      #transport button { padding: 10px 14px; font-size: 12px; }
-      input[type=range] { height: 4px; }
-      input[type=range]::-webkit-slider-thumb { width: 22px; height: 22px; }
-      input[type=range]::-moz-range-thumb { width: 22px; height: 22px; }
-      #transport { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+      #cfg-header {
+        padding: 7px 10px;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+      }
+      #cfg-header span { font-size: 10px; }
+      #cfg-body {
+        padding: 8px 10px;
+        gap: 8px;
+      }
+      .cfg-label { font-size: 8px; letter-spacing: 0.07em; }
+      input[type=range] { height: 3px; }
+      input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
+      input[type=range]::-moz-range-thumb { width: 20px; height: 20px; }
+
+      /* Text: smaller, repositioned for portrait */
+      #txt-title, #txt-title-white {
+        font-size: 14px;
+        top: 40%;
+        right: auto;
+        left: 5%;
+      }
+      #txt-quote, #txt-quote-white {
+        font-size: 10px;
+        bottom: 24%;
+        right: 5%;
+        left: auto;
+        width: 42%;
+      }
+
+      /* Transport: slim */
+      #transport {
+        height: 44px;
+        padding: 4px 10px;
+        padding-bottom: max(4px, env(safe-area-inset-bottom));
+        gap: 6px;
+      }
+      #transport button {
+        padding: 6px 14px;
+        font-size: 10px;
+      }
+      .meter-cell { min-width: 24px; }
+      .meter-cell .label { font-size: 7px; }
+      .meter-bar-wrap { width: 5px; height: 16px; }
     }
   </style>
 </head>
@@ -487,6 +527,20 @@ bindSlider('sl-intensity',  'intensity');
     update();
   }, { passive: false });
 
+  // Touch swipe controls the curtain
+  let touchStartY = null;
+  document.addEventListener('touchstart', e => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (touchStartY === null) return;
+    const dy = touchStartY - e.touches[0].clientY;
+    touchStartY = e.touches[0].clientY;
+    const step = dy / 400;
+    sl.value = Math.min(1, Math.max(0, parseFloat(sl.value) + step));
+    update();
+  }, { passive: true });
+
   update();
 })();
 
@@ -498,8 +552,9 @@ if (window.innerWidth <= 600) {
 document.getElementById('cfg-header').addEventListener('click', () => {
   const body = document.getElementById('cfg-body');
   body.classList.toggle('hidden');
-  document.getElementById('cfg-toggle').textContent =
-    body.classList.contains('hidden') ? '▸' : '▾';
+  const isOpen = !body.classList.contains('hidden');
+  document.getElementById('cfg-toggle').textContent = isOpen ? '▾' : '▸';
+  if (threeInstance) threeInstance.setZoom(isOpen);
 });
 
 // ─────────────────────────────────────────────
@@ -1087,7 +1142,20 @@ function buildThreeScene() {
     scene.fog.color.setHex(hex);
   }
 
-  return { dispose, setFogColor };
+  const BASE_Z = 4.2;
+  function setZoom(zoomedOut) {
+    // On mobile with HUD open, pull camera back so object stays visible
+    const target = (zoomedOut && window.innerWidth <= 600) ? BASE_Z * 1.55 : BASE_Z;
+    camera.position.z += (target - camera.position.z) * 0.12;
+    // Keep nudging until settled
+    if (Math.abs(camera.position.z - target) > 0.01) {
+      requestAnimationFrame(() => setZoom(zoomedOut));
+    } else {
+      camera.position.z = target;
+    }
+  }
+
+  return { dispose, setFogColor, setZoom };
 }
 
 boot();
