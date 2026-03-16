@@ -33,6 +33,7 @@
 
     html, body {
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
     }
     body {
@@ -42,6 +43,8 @@
       font-size: 13px;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      height: 100dvh;
     }
 
     /* ── VISUALIZER ── */
@@ -249,7 +252,7 @@
 
 
     /* ── MOBILE ── */
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       /* Config panel: compact, top strip */
       #cfg-panel {
         top: 6px; right: 6px; left: 6px;
@@ -545,7 +548,7 @@ bindSlider('sl-intensity',  'intensity');
 })();
 
 // Collapse config panel by default on mobile
-if (window.innerWidth <= 600) {
+if (window.innerWidth <= 768) {
   document.getElementById('cfg-body').classList.add('hidden');
   document.getElementById('cfg-toggle').textContent = '▸';
 }
@@ -1145,7 +1148,7 @@ function buildThreeScene() {
   const BASE_Z = 4.2;
   function setZoom(zoomedOut) {
     // On mobile with HUD open, pull camera back so object stays visible
-    const target = (zoomedOut && window.innerWidth <= 600) ? BASE_Z * 1.55 : BASE_Z;
+    const target = (zoomedOut && window.innerWidth <= 768) ? BASE_Z * 1.55 : BASE_Z;
     camera.position.z += (target - camera.position.z) * 0.12;
     // Keep nudging until settled
     if (Math.abs(camera.position.z - target) > 0.01) {
