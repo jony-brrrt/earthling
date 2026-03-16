@@ -7,6 +7,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <style>
+    @font-face {
+      font-family: 'Doto';
+      src: url('fonts/Doto_Rounded-ExtraBold.ttf') format('truetype');
+      font-weight: 800;
+    }
+    @font-face {
+      font-family: 'Doto';
+      src: url('fonts/Doto_Rounded-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -20,182 +31,22 @@
       --muted: #666688;
     }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'SF Mono', 'Fira Code', monospace;
       font-size: 13px;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
-
-    /* ── LOADER ── */
-    #loader {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      padding: 40px 20px;
-      overflow-y: auto;
-    }
-    #loader h1 {
-      font-size: 22px;
-      font-weight: 400;
-      letter-spacing: 0.15em;
-      color: var(--accent);
-    }
-    #drop-zone {
-      width: 560px;
-      max-width: 100%;
-      border: 2px dashed var(--border);
-      border-radius: 16px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-    }
-    #drop-zone:hover, #drop-zone.over {
-      border-color: var(--accent);
-      background: rgba(123,108,246,0.06);
-    }
-    #drop-zone input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    #drop-zone .icon { font-size: 32px; margin-bottom: 10px; }
-    #drop-zone p { color: var(--muted); line-height: 1.6; }
-    #drop-zone strong { color: var(--text); }
-
-    /* ── STEM LIST ── */
-    #stem-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      width: 560px;
-      max-width: 100%;
-    }
-    .stem-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .stem-row-top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-    }
-    .stem-row-top .filename {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--muted);
-      font-size: 11px;
-    }
-    .stem-row-top select {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-family: inherit;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .stem-row-top select:focus { outline: none; border-color: var(--accent); }
-    .stem-row-top .remove {
-      background: none;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 15px;
-      line-height: 1;
-      padding: 2px 4px;
-      border-radius: 4px;
-      transition: color 0.15s;
-      flex-shrink: 0;
-    }
-    .stem-row-top .remove:hover { color: var(--accent2); }
-    .stem-row-asset {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-top: 1px solid var(--border);
-    }
-    .asset-thumb {
-      width: 38px;
-      height: 38px;
-      border-radius: 6px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      color: var(--muted);
-      font-size: 18px;
-    }
-    .asset-thumb img, .asset-thumb video { width: 100%; height: 100%; object-fit: cover; }
-    .asset-label {
-      flex: 1;
-      font-size: 10px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .asset-pick-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-family: inherit;
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: border-color 0.15s, color 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-    .asset-pick-btn:hover { border-color: var(--accent); color: var(--text); }
-    .asset-pick-btn input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .asset-clear-btn {
-      background: none; border: none; color: var(--muted);
-      font-size: 14px; cursor: pointer; padding: 2px 4px;
-      border-radius: 4px; transition: color 0.15s; display: none;
-    }
-    .asset-clear-btn.visible { display: block; }
-    .asset-clear-btn:hover { color: var(--accent2); }
-
-    #launch-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 14px 48px;
-      font-family: inherit;
-      font-size: 14px;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-    #launch-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    #launch-btn:not(:disabled):hover { opacity: 0.85; transform: translateY(-1px); }
 
     /* ── VISUALIZER ── */
     #visualizer {
-      display: none;
+      display: flex;
       flex: 1;
       flex-direction: column;
       position: relative;
@@ -207,21 +58,47 @@
     }
     #canvas-wrap canvas { display: block; }
 
+    /* ── CANVAS TEXT OVERLAYS ── */
+    #txt-title, #txt-quote {
+      position: absolute;
+      pointer-events: none;
+      color: #1a1a1a;
+      mix-blend-mode: multiply;
+      font-family: 'Doto', monospace;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
+      z-index: 10;
+    }
+    #txt-title {
+      font-weight: 800;
+      font-size: 24px;
+      top: 50%;
+      right: 70%;
+    }
+    #txt-quote {
+      font-weight: 600;
+      font-size: 14px;
+      text-align: right;
+      bottom: 35%;
+      right: 25%;
+      width: 22%;
+    }
+
     /* ── TRANSPORT ── */
     #transport {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
-      padding: 8px 16px;
-      background: rgba(10,10,15,0.92);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(8px);
+      height: 56px;
+      padding: 6px 16px 10px;
+      background: #222222;
+      border-top: 1px solid #333;
       flex-shrink: 0;
-      flex-wrap: wrap;
     }
     #transport button {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: #222222;
+      border: 1px solid #444;
       color: var(--text);
       border-radius: 8px;
       padding: 6px 13px;
@@ -234,11 +111,6 @@
     }
     #transport button:hover { border-color: var(--accent); }
     #transport button#play-pause { min-width: 68px; }
-    #transport button#rec-btn { border-color: #c04040; color: #f08080; }
-    #transport button#rec-btn.recording {
-      background: #3a1010; border-color: #f04040; color: #ff8080;
-      animation: blink 1s step-end infinite;
-    }
     @keyframes blink { 50% { opacity: 0.5; } }
 
     #stem-meters {
@@ -251,8 +123,9 @@
     }
     .meter-cell {
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
       align-items: center;
+      justify-content: center;
       gap: 3px;
       min-width: 36px;
     }
@@ -266,8 +139,8 @@
       overflow: hidden;
     }
     .meter-bar-wrap {
-      width: 7px; height: 36px;
-      background: var(--surface);
+      width: 7px; height: 20px;
+      background: #222222;
       border-radius: 4px; overflow: hidden;
       display: flex; flex-direction: column; justify-content: flex-end;
     }
@@ -278,161 +151,163 @@
       position: absolute;
       top: 12px; right: 12px;
       width: 260px;
-      background: rgba(13,13,22,0.94);
-      border: 1px solid var(--border);
+      background: #222222;
+      border: 1px solid #333;
       border-radius: 14px;
-      backdrop-filter: blur(12px);
       overflow: hidden;
       z-index: 100;
       box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      font-family: 'Doto', monospace;
+      font-weight: 600;
+      color: #ffffff;
     }
     #cfg-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 14px; cursor: pointer; user-select: none;
-      border-bottom: 1px solid var(--border);
-      font-size: 11px; letter-spacing: 0.1em; color: var(--muted);
+      border-bottom: 1px solid #333;
+      font-size: 11px; letter-spacing: 0.1em; color: #ffffff;
     }
-    #cfg-header:hover { color: var(--text); }
-    #cfg-header span { color: var(--accent); font-size: 13px; }
+    #cfg-header:hover { color: #ffffff; opacity: 0.8; }
+    #cfg-header span { color: #ffffff; font-size: 13px; }
     #cfg-body { padding: 14px; display: flex; flex-direction: column; gap: 13px; }
     #cfg-body.hidden { display: none; }
     .cfg-group { display: flex; flex-direction: column; gap: 6px; }
     .cfg-label {
-      font-size: 10px; color: var(--muted);
+      font-size: 10px; color: #ffffff;
       text-transform: uppercase; letter-spacing: 0.09em;
       display: flex; justify-content: space-between;
     }
-    .cfg-label .val { color: var(--text); }
+    .cfg-label .val { color: #ffffff; }
     input[type=range] {
       -webkit-appearance: none; appearance: none;
       width: 100%; height: 3px; border-radius: 2px;
-      background: var(--border); outline: none; cursor: pointer;
+      background: #444; outline: none; cursor: pointer;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 13px; height: 13px; border-radius: 50%;
-      background: var(--accent); cursor: pointer;
+      background: #ffffff; cursor: pointer;
     }
     input[type=range]::-moz-range-thumb {
       width: 13px; height: 13px; border-radius: 50%;
-      background: var(--accent); border: none; cursor: pointer;
+      background: #ffffff; border: none; cursor: pointer;
     }
-    .palette-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .palette-btn {
-      background: none; border: 1px solid var(--border);
-      border-radius: 6px; padding: 4px 8px;
-      font-family: inherit; font-size: 10px; color: var(--muted);
-      cursor: pointer; letter-spacing: 0.06em;
-      transition: border-color 0.15s, color 0.15s;
+    /* hue slider special track */
+    #sl-hue {
+      background: linear-gradient(to right,
+        hsl(0,70%,55%), hsl(45,70%,55%), hsl(90,70%,55%),
+        hsl(135,70%,55%), hsl(180,70%,55%), hsl(225,70%,55%),
+        hsl(270,70%,55%), hsl(315,70%,55%), hsl(360,70%,55%));
+      height: 6px; border-radius: 3px;
     }
-    .palette-btn:hover, .palette-btn.active { border-color: var(--accent); color: var(--text); }
+    #sl-hue::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
+    #sl-hue::-moz-range-thumb     { background: #fff; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
     .cfg-divider { height: 1px; background: var(--border); margin: 0 -14px; }
 
-    /* ── TOAST ── */
-    #rec-toast {
-      position: fixed; bottom: 76px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(20,10,10,0.92); border: 1px solid #c04040;
-      color: #ff9090; font-size: 11px; letter-spacing: 0.08em;
-      padding: 8px 18px; border-radius: 8px;
-      pointer-events: none; opacity: 0;
-      transition: opacity 0.25s, transform 0.25s; z-index: 200;
+    /* ── AMBIENCE CURTAIN ── */
+    #canvas-wrap { background: #eae8e5; }
+    #ambience-curtain {
+      position: absolute;
+      inset: 0;
+      background: #222222;
+      transform: translateY(-100%);
+      pointer-events: none;
+      z-index: 1;
     }
-    #rec-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #canvas-wrap canvas { position: relative; z-index: 2; }
+    #txt-title, #txt-quote { z-index: 3; }
+
+    /* White text layer — clipped to curtain region via clip-path */
+    #txt-clip {
+      position: absolute;
+      inset: 0;
+      clip-path: inset(0 0 100% 0); /* JS updates bottom value */
+      z-index: 4;
+      pointer-events: none;
+    }
+    #txt-title-white, #txt-quote-white {
+      position: absolute;
+      color: #ffffff;
+      font-family: 'Doto', monospace;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
+    }
+    #txt-title-white {
+      font-weight: 800;
+      font-size: 24px;
+      top: 50%;
+      right: 70%;
+    }
+    #txt-quote-white {
+      font-weight: 600;
+      font-size: 14px;
+      text-align: right;
+      bottom: 35%;
+      right: 25%;
+      width: 22%;
+    }
+
 
     /* ── MOBILE ── */
     @media (max-width: 600px) {
-      #loader {
-        gap: 18px;
-        padding: 24px 14px;
-        justify-content: flex-start;
-        padding-top: 40px;
-      }
-      #loader h1 { font-size: 17px; }
-
-      #drop-zone { padding: 22px 16px; border-radius: 12px; }
-      #drop-zone .icon { font-size: 26px; }
-      #drop-zone p { font-size: 12px; }
-
-      /* Asset row stacks vertically on narrow screens */
-      .stem-row-asset { flex-wrap: wrap; }
-      .asset-label { width: 100%; order: -1; }
-
-      /* Bigger touch targets for selects and buttons */
-      .stem-row-top select { padding: 7px 8px; font-size: 13px; }
-      .stem-row-top .remove { font-size: 18px; padding: 6px 8px; }
-
-      #launch-btn { padding: 14px 32px; width: 100%; max-width: 320px; }
-
-      /* Config panel: full width at top, collapsed by default */
       #cfg-panel {
         top: 8px; right: 8px; left: 8px;
         width: auto;
       }
-
-      /* Transport: larger touch targets */
       #transport { padding: 8px 10px; gap: 8px; }
       #transport button { padding: 10px 14px; font-size: 12px; }
-
-      /* Bigger range thumb for touch */
       input[type=range] { height: 4px; }
       input[type=range]::-webkit-slider-thumb { width: 22px; height: 22px; }
       input[type=range]::-moz-range-thumb { width: 22px; height: 22px; }
-
-      /* Safe area bottom for notched phones */
       #transport { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-      #rec-toast { bottom: max(76px, calc(60px + env(safe-area-inset-bottom))); }
     }
   </style>
 </head>
 <body>
 
-<!-- ══════════════ LOADER ══════════════ -->
-<div id="loader">
-  <h1>STEM VISUALIZER</h1>
-  <div id="drop-zone">
-    <input type="file" id="file-input" multiple accept="audio/*" />
-    <div class="icon">🎛</div>
-    <p><strong>Drop audio stems here</strong><br/>or click to browse<br/><span style="font-size:11px">MP3 · WAV · FLAC · OGG · M4A</span></p>
-  </div>
-  <div id="stem-list"></div>
-  <button id="launch-btn" disabled>LAUNCH</button>
-</div>
-
 <!-- ══════════════ VISUALIZER ══════════════ -->
 <div id="visualizer">
   <div id="canvas-wrap">
+    <div id="ambience-curtain"></div>
+    <div id="txt-title">EARTHLING</div>
+    <div id="txt-quote">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
+    <!-- White copies clipped to the curtain region -->
+    <div id="txt-clip">
+      <div id="txt-title-white">EARTHLING</div>
+      <div id="txt-quote-white">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
+    </div>
     <div id="cfg-panel">
       <div id="cfg-header">PARAMETERS <span id="cfg-toggle">▾</span></div>
       <div id="cfg-body">
         <div class="cfg-group">
-          <div class="cfg-label">Sensitivity <span class="val" id="lbl-sensitivity">1.00</span></div>
-          <input type="range" id="sl-sensitivity" min="0.2" max="3.0" step="0.05" value="1.0" />
+          <div class="cfg-label">Vibration <span class="val" id="lbl-vibration">0.50</span></div>
+          <input type="range" id="sl-vibration" min="0" max="1" step="0.01" value="0.5" />
         </div>
         <div class="cfg-group">
-          <div class="cfg-label">Lerp Smoothing <span class="val" id="lbl-lerp">0.15</span></div>
-          <input type="range" id="sl-lerp" min="0.01" max="0.6" step="0.01" value="0.15" />
+          <div class="cfg-label">Stiffness <span class="val" id="lbl-stiffness">0.50</span></div>
+          <input type="range" id="sl-stiffness" min="0" max="1" step="0.01" value="0.5" />
         </div>
         <div class="cfg-group">
-          <div class="cfg-label">Spring Stiffness <span class="val" id="lbl-stiff">0.18</span></div>
-          <input type="range" id="sl-stiff" min="0.02" max="0.6" step="0.01" value="0.18" />
+          <div class="cfg-label">Hue <span class="val" id="lbl-hue">0°</span></div>
+          <input type="range" id="sl-hue" min="0" max="360" step="1" value="0" />
         </div>
         <div class="cfg-group">
-          <div class="cfg-label">Spring Damping <span class="val" id="lbl-damp">0.72</span></div>
-          <input type="range" id="sl-damp" min="0.3" max="0.98" step="0.01" value="0.72" />
+          <div class="cfg-label">Intensity <span class="val" id="lbl-intensity">0.75</span></div>
+          <input type="range" id="sl-intensity" min="0" max="1" step="0.01" value="0.75" />
+        </div>
+        <div class="cfg-group">
+          <div class="cfg-label">Ambience <span class="val" id="lbl-ambience">0%</span></div>
+          <input type="range" id="sl-ambience" min="0" max="1" step="0.01" value="0" />
         </div>
       </div>
     </div>
   </div>
   <div id="transport">
-    <button id="back-btn">← BACK</button>
     <button id="play-pause">PLAY</button>
-    <button id="rec-btn">⏺ REC</button>
     <div id="stem-meters"></div>
   </div>
 </div>
 
-<div id="rec-toast"></div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -489,42 +364,131 @@ const STEM_COLORS = {
 //  LIVE CONFIG
 // ─────────────────────────────────────────────
 const CFG = {
+  // user controls
+  vibration:  0.5,   // 0–1 → kick shake strength multiplier
+  stiffness:  0.5,   // 0–1 → 0=jelly/floppy, 1=rigid (maps pose spring + mesh stiffness)
+  hue:        0,     // 0–360 → hue rotation applied to all colors
+  intensity:  0.75,  // 0–1 → master volume + overall animation scale
+
+  // internal derived (recomputed from user controls each frame)
   sensitivity: 1.0,
   lerp:        0.15,
-  stiffness:   0.10,
+  poseStiff:   0.10,
   damping:     0.72,
 };
 
 // ─────────────────────────────────────────────
 //  STATE
 // ─────────────────────────────────────────────
-let pendingFiles  = [];   // persists across back/forward
 let stems         = [];
 let audioCtx      = null;
 let threeInstance = null;
 let playing       = false;
 let startOffset   = 0;
 let startTime     = 0;
-let mediaRecorder = null;
-let recChunks     = [];
 let recDestNode   = null;
 
 // ─────────────────────────────────────────────
 //  CONFIG PANEL
 // ─────────────────────────────────────────────
-function bindSlider(id, key, dec = 2) {
+
+
+function bindSlider(id, key, fmt) {
   const sl  = document.getElementById(id);
-  const lbl = document.getElementById('lbl-' + id.slice(3));
+  const lbl = document.getElementById('lbl-' + key);
   sl.addEventListener('input', () => {
     const v = parseFloat(sl.value);
     CFG[key] = v;
-    lbl.textContent = v.toFixed(dec);
+    lbl.textContent = fmt ? fmt(v) : v.toFixed(2);
   });
 }
-bindSlider('sl-sensitivity', 'sensitivity');
-bindSlider('sl-lerp',        'lerp');
-bindSlider('sl-stiff',       'stiffness');
-bindSlider('sl-damp',        'damping');
+bindSlider('sl-vibration',  'vibration');
+bindSlider('sl-stiffness',  'stiffness');
+bindSlider('sl-hue',        'hue',       v => Math.round(v) + '°');
+bindSlider('sl-intensity',  'intensity');
+// intensity has no audio role — purely animation vibrancy
+
+// Ambience curtain slider
+(function() {
+  const sl      = document.getElementById('sl-ambience');
+  const lbl     = document.getElementById('lbl-ambience');
+  const curtain = document.getElementById('ambience-curtain');
+  const clip    = document.getElementById('txt-clip');
+
+  const QUOTES = [
+    'YOU CAN\'T<br>REALLY CONTROL<br>ANYTHING',
+    'DON\'T BE DARK<br>ABOUT IT',
+    'GO TO THE<br>MOUNTAINS',
+    'CALL YOUR MOM',
+    'WEAR THEM<br>TROUSERS',
+    'BEND METALS',
+    'GET PAID',
+    'EAT A PIZZA',
+    'PET A CAT'
+  ];
+
+  // Shuffle all except first, keep index 0 first
+  const shuffled = [QUOTES[0], ...QUOTES.slice(1).sort(() => Math.random() - 0.5)];
+  let quoteIdx = 0;
+
+  const quoteEl      = document.getElementById('txt-quote');
+  const quoteWhiteEl = document.getElementById('txt-quote-white');
+
+  function setQuote(html) {
+    quoteEl.innerHTML = html;
+    quoteWhiteEl.innerHTML = html;
+  }
+
+  setQuote(shuffled[0]);
+
+  let prevV         = 0;
+  let curtainOver   = false; // curtain is covering the quote text right now
+
+  function isCurtainOverQuote(v) {
+    const wrapRect  = document.getElementById('canvas-wrap').getBoundingClientRect();
+    const quoteRect = quoteEl.getBoundingClientRect();
+    const quoteTopFrac = (quoteRect.top - wrapRect.top) / wrapRect.height;
+    return v > quoteTopFrac; // curtain bottom edge is below quote top
+  }
+
+  function update() {
+    const v = parseFloat(sl.value);
+    lbl.textContent = Math.round(v * 100) + '%';
+
+    curtain.style.transform = `translateY(${(v - 1) * 100}%)`;
+    clip.style.clipPath = `inset(0 0 ${(1 - v) * 100}% 0)`;
+
+    if (threeInstance) {
+      const r = Math.round(0xea + (0x22 - 0xea) * v);
+      const g = Math.round(0xe8 + (0x22 - 0xe8) * v);
+      const b = Math.round(0xe5 + (0x22 - 0xe5) * v);
+      threeInstance.setFogColor((r << 16) | (g << 8) | b);
+    }
+
+    const nowOver = isCurtainOverQuote(v);
+
+    // Every time the curtain edge crosses the quote (in either direction) → next phrase
+    if (nowOver !== curtainOver) {
+      quoteIdx = (quoteIdx + 1) % shuffled.length;
+      setQuote(shuffled[quoteIdx]);
+    }
+
+    curtainOver = nowOver;
+    prevV = v;
+  }
+
+  sl.addEventListener('input', update);
+
+  // Scroll wheel controls the curtain
+  document.addEventListener('wheel', e => {
+    e.preventDefault();
+    const step = e.deltaY / 1200;
+    sl.value = Math.min(1, Math.max(0, parseFloat(sl.value) + step));
+    update();
+  }, { passive: false });
+
+  update();
+})();
 
 // Collapse config panel by default on mobile
 if (window.innerWidth <= 600) {
@@ -543,224 +507,75 @@ document.getElementById('cfg-header').addEventListener('click', () => {
 // ─────────────────────────────────────────────
 const HARDCODED_STEMS = [
   'earthling bass.wav',
-  'earthling dfeka.wav',
   'earthling hihat.wav',
   'earthling kick.wav',
   'earthling pan gem.wav',
   'earthling piano.wav',
+  'earthling vox.wav',
 ];
 
-async function autoLaunch() {
-  try {
-    // Fetch each file from the same folder as the HTML
-    const files = await Promise.all(HARDCODED_STEMS.map(async name => {
-      const res = await fetch(name);
-      if (!res.ok) throw new Error(`Could not load ${name}`);
-      const blob = await res.blob();
-      return new File([blob], name, { type: 'audio/wav' });
-    }));
-    addAudioFiles(files);
-
-    // Trigger launch automatically (needs user gesture for AudioContext —
-    // show a single tap-to-start screen instead of the full upload UI)
-    document.getElementById('loader').innerHTML = `
-      <h1>STEM VISUALIZER</h1>
-      <p style="color:var(--muted);font-size:13px;">Earthling · ${files.length} stems loaded</p>
-      <button id="launch-btn" style="
-        background:var(--accent);color:#fff;border:none;border-radius:10px;
-        padding:16px 52px;font-family:inherit;font-size:15px;letter-spacing:0.1em;cursor:pointer;">
-        TAP TO START
-      </button>`;
-    document.getElementById('launch-btn').addEventListener('click', async () => {
-      document.getElementById('launch-btn').textContent = 'LOADING…';
-      if (!audioCtx) {
-        audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
-        recDestNode = audioCtx.createMediaStreamDestination();
-      }
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-      await Promise.all(pendingFiles.filter(p => !p.buffer).map(async p => {
-        const buf = await p.file.arrayBuffer();
-        p.buffer  = await audioCtx.decodeAudioData(buf);
-      }));
-      buildStemsFromPending();
-      buildMeterUI();
-      document.getElementById('loader').style.display     = 'none';
-      document.getElementById('visualizer').style.display = 'flex';
-      startThree();
-      playAll();
-    });
-  } catch(e) {
-    console.warn('Auto-launch failed, falling back to manual upload:', e);
-    // Falls through to normal upload UI
-  }
-}
-
 // ─────────────────────────────────────────────
-//  FILE LOADING UI
+//  BOOT — fetch stems, decode, start on first click
 // ─────────────────────────────────────────────
-const dropZone   = document.getElementById('drop-zone');
-const fileInput  = document.getElementById('file-input');
-const stemListEl = document.getElementById('stem-list');
-const launchBtn  = document.getElementById('launch-btn');
-
 function guessType(name) {
   name = name.toLowerCase();
   if (/kick|bd|bass.?drum/.test(name))     return 'kick';
   if (/snare|sd/.test(name))               return 'snare';
   if (/hihat|hi.hat|hh|cymbal/.test(name)) return 'hi-hat';
   if (/bass|sub/.test(name))               return 'bass';
-  if (/synth|lead|keys|pad/.test(name))    return 'synth';
+  if (/synth|lead|keys|pad|piano|gem/.test(name)) return 'synth';
   if (/perc|clave|shaker|tamb/.test(name)) return 'perc';
   if (/vox|vocal|voice/.test(name))        return 'vox';
-  return null; // unrecognised — caller will assign an unused type
+  return 'other';
 }
 
-function addAudioFiles(files) {
-  for (const f of files) {
-    if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|flac|m4a|aiff)$/i.test(f.name)) continue;
-    if (pendingFiles.find(p => p.file.name === f.name && p.file.size === f.size)) continue;
-    const guessed = guessType(f.name);
-    // If unrecognised, pick the first STEM_TYPE not already used by another file
-    const type = guessed || STEM_TYPES.find(t => !pendingFiles.some(p => p.type === t)) || 'other';
-    pendingFiles.push({ file: f, type, asset: null });
-  }
-  renderStemList();
-}
-
-function setAsset(idx, assetFile) {
-  if (pendingFiles[idx].asset) URL.revokeObjectURL(pendingFiles[idx].asset.url);
-  if (!assetFile) { pendingFiles[idx].asset = null; renderStemList(); return; }
-  const isVideo = assetFile.type.startsWith('video/');
-  const isImage = assetFile.type.startsWith('image/');
-  if (!isVideo && !isImage) return;
-  pendingFiles[idx].asset = {
-    file: assetFile,
-    url:  URL.createObjectURL(assetFile),
-    kind: isVideo ? 'video' : 'image',
-  };
-  renderStemList();
-}
-
-function renderStemList() {
-  stemListEl.innerHTML = '';
-  pendingFiles.forEach((stem, i) => {
-    const row = document.createElement('div');
-    row.className = 'stem-row';
-
-    const top = document.createElement('div');
-    top.className = 'stem-row-top';
-    top.innerHTML = `
-      <span class="filename" title="${stem.file.name}">${stem.file.name}</span>
-      <select data-i="${i}">
-        ${STEM_TYPES.map(t => `<option value="${t}"${t===stem.type?' selected':''}>${t}</option>`).join('')}
-      </select>
-      <button class="remove" data-i="${i}">✕</button>`;
-    row.appendChild(top);
-
-    const assetRow = document.createElement('div');
-    assetRow.className = 'stem-row-asset';
-    const thumb = document.createElement('div');
-    thumb.className = 'asset-thumb';
-    if (stem.asset) {
-      thumb.innerHTML = stem.asset.kind === 'image'
-        ? `<img src="${stem.asset.url}" alt="" />`
-        : `<video src="${stem.asset.url}" muted></video>`;
-    } else {
-      thumb.textContent = '🖼';
-    }
-    const label = document.createElement('span');
-    label.className = 'asset-label';
-    label.textContent = stem.asset ? stem.asset.file.name : 'No asset';
-
-    const pickBtn = document.createElement('label');
-    pickBtn.className = 'asset-pick-btn';
-    pickBtn.textContent = 'ADD ASSET';
-    const assetInput = document.createElement('input');
-    assetInput.type = 'file';
-    assetInput.accept = 'image/*,video/*';
-    assetInput.addEventListener('change', () => {
-      if (assetInput.files[0]) setAsset(i, assetInput.files[0]);
-      assetInput.value = '';
-    });
-    pickBtn.appendChild(assetInput);
-
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'asset-clear-btn' + (stem.asset ? ' visible' : '');
-    clearBtn.textContent = '✕';
-    clearBtn.addEventListener('click', () => setAsset(i, null));
-
-    assetRow.append(thumb, label, pickBtn, clearBtn);
-    row.appendChild(assetRow);
-    stemListEl.appendChild(row);
-  });
-
-  stemListEl.querySelectorAll('select').forEach(s => {
-    s.addEventListener('change', e => { pendingFiles[+e.target.dataset.i].type = e.target.value; });
-  });
-  stemListEl.querySelectorAll('.remove').forEach(b => {
-    b.addEventListener('click', e => {
-      const idx = +e.currentTarget.dataset.i;
-      if (pendingFiles[idx].asset) URL.revokeObjectURL(pendingFiles[idx].asset.url);
-      pendingFiles.splice(idx, 1);
-      renderStemList();
-    });
-  });
-  launchBtn.disabled = pendingFiles.length === 0;
-}
-
-dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('over');
-  addAudioFiles([...e.dataTransfer.files]);
-});
-fileInput.addEventListener('change', () => { addAudioFiles([...fileInput.files]); fileInput.value = ''; });
-
-// ─────────────────────────────────────────────
-//  LAUNCH
-// ─────────────────────────────────────────────
-launchBtn.addEventListener('click', async () => {
-  launchBtn.disabled = true;
-  launchBtn.textContent = 'LOADING…';
-
-  if (!audioCtx) {
-    audioCtx    = new (window.AudioContext || window.webkitAudioContext)();
-    recDestNode = audioCtx.createMediaStreamDestination();
-  }
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-  // Decode only new files
-  await Promise.all(pendingFiles.filter(p => !p.buffer).map(async p => {
-    const buf = await p.file.arrayBuffer();
-    p.buffer  = await audioCtx.decodeAudioData(buf);
-  }));
-
-  buildStemsFromPending();
-  buildMeterUI();
-  document.getElementById('loader').style.display     = 'none';
-  document.getElementById('visualizer').style.display = 'flex';
+async function boot() {
+  // Start Three.js immediately — visual runs before audio loads
   startThree();
-  playAll();
-  launchBtn.textContent = 'LAUNCH';
-});
 
-function buildStemsFromPending() {
-  stems = pendingFiles.map(p => {
+  // Fetch all stem buffers in parallel
+  let rawBuffers;
+  try {
+    rawBuffers = await Promise.all(HARDCODED_STEMS.map(async name => {
+      const res = await fetch('stems/' + name);
+      if (!res.ok) throw new Error(`${name}: ${res.status}`);
+      return { name, type: guessType(name), buf: await res.arrayBuffer() };
+    }));
+  } catch(e) {
+    console.error('Stem load failed:', e);
+    return;
+  }
+
+  // Decode and start — AudioContext created immediately, browser resumes on first interaction automatically
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  stems = await Promise.all(rawBuffers.map(async d => {
     const analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.3;
-    return {
-      type:      p.type,
-      name:      p.file.name,
-      buffer:    p.buffer,
-      analyser,
-      source:    null,
-      lerpAmp:   0,
-      prev:      0,
-      lastFired: 0,
+    const buffer = await audioCtx.decodeAudioData(d.buf.slice(0));
+    return { type: d.type, name: d.name, analyser, buffer,
+             source: null, lerpAmp: 0, prev: 0, lastFired: 0 };
+  }));
+
+  buildMeterUI();
+
+  if (audioCtx.state === 'suspended') {
+    // Browser blocked autoplay — start on first interaction
+    const resume = async () => {
+      await audioCtx.resume();
+      playAll();
+      document.removeEventListener('click', resume);
+      document.removeEventListener('keydown', resume);
     };
-  });
+    document.addEventListener('click', resume);
+    document.addEventListener('keydown', resume);
+  } else {
+    playAll();
+  }
 }
+
+function buildStemsFromPending() {} // no-op, kept for safety
 
 // ─────────────────────────────────────────────
 //  TRANSPORT
@@ -775,7 +590,6 @@ function playAll() {
     src.loop   = true;
     src.connect(s.analyser);
     s.analyser.connect(audioCtx.destination);
-    s.analyser.connect(recDestNode);
     src.start(0, startOffset % s.buffer.duration);
     s.source = src;
   });
@@ -800,28 +614,38 @@ document.getElementById('play-pause').addEventListener('click', () => {
   if (playing) pauseAll(); else playAll();
 });
 
-document.getElementById('back-btn').addEventListener('click', () => {
-  stopRecording();
-  pauseAll();
-  if (threeInstance) { threeInstance.dispose(); threeInstance = null; }
-  stems       = [];
-  startOffset = 0;
-  document.getElementById('stem-meters').innerHTML    = '';
-  document.getElementById('visualizer').style.display = 'none';
-  document.getElementById('loader').style.display     = 'flex';
-  renderStemList();
-  launchBtn.disabled    = pendingFiles.length === 0;
-  launchBtn.textContent = 'LAUNCH';
-});
-
 // ─────────────────────────────────────────────
 //  METERS
 // ─────────────────────────────────────────────
+// STEM_COLORS values are CSS strings — parse them to numeric hex for hue shifting
+function cssToHex(css) {
+  // handles '#rrggbb' and '#rgb'
+  css = css.replace('#', '');
+  if (css.length === 3) css = css.split('').map(c => c+c).join('');
+  return parseInt(css, 16);
+}
+
+function updateMeterColors() {
+  stems.forEach(s => {
+    if (s.meterEl && s.meterBaseHex != null) {
+      s.meterEl.style.background = hexToCss(shiftHex(s.meterBaseHex, CFG.hue));
+    }
+  });
+  // Update dark text color from hue
+  const textCss = hexToCss(shiftHex(0x1a1a1a, CFG.hue));
+  const t1 = document.getElementById('txt-title');
+  const t2 = document.getElementById('txt-quote');
+  if (t1) t1.style.color = textCss;
+  if (t2) t2.style.color = textCss;
+}
+
 function buildMeterUI() {
   const metersEl = document.getElementById('stem-meters');
   metersEl.innerHTML = '';
   stems.forEach((s, i) => {
-    const col  = STEM_COLORS[s.type] || '#aaa';
+    const baseHex = cssToHex(STEM_COLORS[s.type] || '#aaaaaa');
+    s.meterBaseHex = baseHex;
+    const col  = hexToCss(shiftHex(baseHex, CFG.hue));
     const cell = document.createElement('div');
     cell.className = 'meter-cell';
     cell.innerHTML = `
@@ -834,54 +658,7 @@ function buildMeterUI() {
   });
 }
 
-// ─────────────────────────────────────────────
-//  VIDEO EXPORT
-// ─────────────────────────────────────────────
-function showToast(msg, dur = 3000) {
-  const t = document.getElementById('rec-toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), dur);
-}
-function startRecording() {
-  const canvas = document.querySelector('#canvas-wrap canvas');
-  if (!canvas || !recDestNode) return;
-  const combined = new MediaStream([
-    ...canvas.captureStream(60).getVideoTracks(),
-    ...recDestNode.stream.getAudioTracks(),
-  ]);
-  const mimeType = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']
-    .find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
-  mediaRecorder = new MediaRecorder(combined, { mimeType, videoBitsPerSecond: 8_000_000 });
-  recChunks = [];
-  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(recChunks, { type: mimeType });
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: 'stem-visualizer-' + Date.now() + '.webm',
-    });
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast('Recording saved.');
-  };
-  mediaRecorder.start(100);
-  document.getElementById('rec-btn').classList.add('recording');
-  document.getElementById('rec-btn').textContent = '⏹ STOP';
-  showToast('Recording started — audio + video', 2500);
-}
-function stopRecording() {
-  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-  mediaRecorder.stop();
-  mediaRecorder = null;
-  document.getElementById('rec-btn').classList.remove('recording');
-  document.getElementById('rec-btn').textContent = '⏺ REC';
-}
-document.getElementById('rec-btn').addEventListener('click', () => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') stopRecording();
-  else startRecording();
-});
+function stopRecording() {} // no-op — recording removed
 
 // ─────────────────────────────────────────────
 //  AUDIO HELPER
@@ -898,6 +675,43 @@ function getRMS(analyser) {
 }
 
 // ─────────────────────────────────────────────
+//  COLOR HELPERS (module scope — used by 3D mats + meter bars)
+// ─────────────────────────────────────────────
+function hslToHex(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+  };
+  return (Math.round(f(0)*255) << 16) | (Math.round(f(8)*255) << 8) | Math.round(f(4)*255);
+}
+function hexToHsl(hex) {
+  const r = ((hex >> 16) & 0xff) / 255;
+  const g = ((hex >>  8) & 0xff) / 255;
+  const b =  (hex        & 0xff) / 255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l * 100];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h;
+  if      (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else                h = ((r - g) / d + 4) / 6;
+  return [h * 360, s * 100, l * 100];
+}
+function shiftHex(hex, dHue) {
+  const [h, s, l] = hexToHsl(hex);
+  return hslToHex(h + dHue, s, l);
+}
+// Convert numeric hex to CSS #rrggbb string
+function hexToCss(hex) {
+  return '#' + ('000000' + hex.toString(16)).slice(-6);
+}
+
+// ─────────────────────────────────────────────
 //  THREE.JS HEAD VISUALIZER
 // ─────────────────────────────────────────────
 function startThree() {
@@ -911,17 +725,17 @@ function buildThreeScene() {
   const H = wrap.clientHeight;
 
   // ── Renderer ──
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(W, H);
-  renderer.setClearColor(0xeae8e5, 1);
+  renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
   wrap.appendChild(renderer.domElement);
 
   // ── Scene + Camera ──
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xeae8e5);
+  scene.background = null;
   scene.fog    = new THREE.FogExp2(0xeae8e5, 0.12);
   const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
   camera.position.set(0, 0, 4.2);
@@ -976,17 +790,29 @@ function buildThreeScene() {
 
   const loader = new THREE.GLTFLoader();
 
-  // All mesh references collected after load — used for material swapping
+  // All mesh references collected after load — used for material swapping + deform
   const meshes = [];
+
+  // ── Simple hash noise (no dependencies) ──
+  function hashNoise(x, y, z) {
+    let n = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453;
+    return n - Math.floor(n); // 0..1
+  }
+  function smoothNoise(x, y, z, t) {
+    // animate noise by offsetting with time
+    return (hashNoise(x + t * 0.3, y + t * 0.2, z + t * 0.4) - 0.5) * 2; // -1..1
+  }
 
   function makeMat(hex) {
     return new THREE.MeshBasicMaterial({
-      color: hex,
+      color: shiftHex(hex, CFG.hue),
       side:  THREE.DoubleSide,
     });
   }
 
-  const baseMat = makeMat(0xf0ece6);
+  const BASE_HEX = 0xf0ece6;
+  let baseMat = makeMat(BASE_HEX);
+  let lastHue = CFG.hue;
 
   loader.load('white_mesh.glb', (gltf) => {
     const model = gltf.scene;
@@ -997,7 +823,13 @@ function buildThreeScene() {
         child.castShadow    = true;
         child.receiveShadow = true;
         child.geometry.computeVertexNormals();
-        meshes.push(child);  // keep reference for later swaps
+        // Store original vertex positions + unique random seed per vertex
+        const pos = child.geometry.attributes.position;
+        child.userData.origPositions = new Float32Array(pos.array);
+        child.userData.vertexSeeds   = Float32Array.from(
+          { length: pos.count }, () => Math.random() * 100
+        );
+        meshes.push(child);
       }
     });
 
@@ -1048,21 +880,38 @@ function buildThreeScene() {
     if (!alive) return;
     rafId = requestAnimationFrame(animate);
 
+    // ── Derive internal params from user controls ──
+    // stiffness 0→1: 0 = jelly (soft spring, low damping = wobbly)
+    //                1 = rigid (stiff spring, high damping = snappy)
+    const poseStiff = 0.02 + CFG.stiffness * 0.38;   // 0.02 → 0.40
+    const poseDamp  = 0.50 + CFG.stiffness * 0.45;   // 0.50 → 0.95
+    // Jelly: gravity sag — when stiffness is low, head droops toward target slowly
+    const gravSag   = (1 - CFG.stiffness) * 0.04;    // 0→0.04 extra Y droop
+
+    const intens = CFG.intensity; // 0–1 drives pose range, idle sway, kick amp
+
+    // ── Hue change — rebuild base mat + recolor meter bars ──
+    if (CFG.hue !== lastHue) {
+      lastHue = CFG.hue;
+      baseMat = makeMat(BASE_HEX);
+      meshes.forEach(m => { m.material = baseMat; });
+      updateMeterColors();
+    }
+
     // Poll audio stems
     stems.forEach(s => {
-      const raw = getRMS(s.analyser) * CFG.sensitivity;
-      // Lerped value drives the meter display only
-      s.lerpAmp += (raw - s.lerpAmp) * CFG.lerp;
+      const raw = getRMS(s.analyser) * (0.5 + intens * 1.5); // sensitivity driven by intensity
+      s.lerpAmp += (raw - s.lerpAmp) * 0.15;
       if (s.meterEl) s.meterEl.style.height = Math.min(100, s.lerpAmp * 220) + '%';
 
-      // Fire on upward crossing, with a 200ms minimum gap to prevent double-fires
       const now = performance.now();
       if (raw > EMIT_THRESHOLD && s.prev <= EMIT_THRESHOLD && now - s.lastFired > 200) {
         s.lastFired = now;
         if (s.type === 'kick') {
-          const strength = 0.06 + Math.random() * 0.14;
+          // vibration: 0=barely moves, 1=full shake
+          const baseStr = 0.06 + Math.random() * 0.14;
+          const strength = baseStr * (0.1 + CFG.vibration * 0.9) * (0.5 + intens * 0.5);
           kickShake = { born: performance.now(), duration: 500, strength };
-          // Flash green
           meshes.forEach(m => { m.material = makeMat(0x80E080); });
           clearTimeout(colorReturnTimer);
           colorReturnTimer = setTimeout(() => {
@@ -1071,28 +920,25 @@ function buildThreeScene() {
         } else {
           let pose;
           if (s.type === 'synth') {
-            // Fully random facing on every synth hit
             pose = {
-              rotX: (Math.random() - 0.5) * 1.4,
-              rotY: (Math.random() - 0.5) * 2.6,
-              rotZ: (Math.random() - 0.5) * 0.8,
+              rotX: (Math.random() - 0.5) * 1.4 * intens,
+              rotY: (Math.random() - 0.5) * 2.6 * intens,
+              rotZ: (Math.random() - 0.5) * 0.8 * intens,
             };
           } else {
             const base = STEM_POSES[s.type] || STEM_POSES.other;
             const jolt = 0.20;
             pose = {
-              rotX: base.rotX + (Math.random() - 0.5) * jolt,
-              rotY: base.rotY + (Math.random() - 0.5) * jolt,
-              rotZ: base.rotZ + (Math.random() - 0.5) * jolt,
+              rotX: (base.rotX + (Math.random() - 0.5) * jolt) * intens,
+              rotY: (base.rotY + (Math.random() - 0.5) * jolt) * intens,
+              rotZ: (base.rotZ + (Math.random() - 0.5) * jolt) * intens,
             };
           }
           target = pose;
-          // Swap material immediately to stem color
           const hex = STEM_COLORS_3D[s.type];
           if (hex != null && meshes.length > 0) {
             const mat = makeMat(hex);
             meshes.forEach(m => { m.material = mat; });
-            // Return to base after 600ms
             clearTimeout(colorReturnTimer);
             colorReturnTimer = setTimeout(() => {
               meshes.forEach(m => { m.material = baseMat; });
@@ -1104,21 +950,23 @@ function buildThreeScene() {
     });
 
     // Spring physics toward target pose
-    const stiff = CFG.stiffness;
-    const damp  = CFG.damping;
     ['rotX', 'rotY', 'rotZ'].forEach(k => {
-      vel[k] += (target[k] - current[k]) * stiff;
-      vel[k] *= damp;
+      vel[k] += (target[k] - current[k]) * poseStiff;
+      vel[k] *= poseDamp;
       current[k] += vel[k];
     });
 
-    // Idle micro-sway
-    idleT += 0.008;
-    const idleX = Math.sin(idleT * 0.7)  * 0.012;
-    const idleY = Math.sin(idleT * 1.1)  * 0.008;
-    const idleZ = Math.sin(idleT * 0.55) * 0.006;
+    // Gravity sag when stiffness is low — head droops down
+    const sagY = gravSag * (1 + Math.sin(idleT * 0.4) * 0.3);
 
-    // Kick shake overlay — decaying oscillation on top of current pose
+    // Idle micro-sway (scaled by intensity)
+    idleT += 0.008;
+    const swayScale = 0.4 + intens * 0.6;
+    const idleX = Math.sin(idleT * 0.7)  * 0.012 * swayScale;
+    const idleY = Math.sin(idleT * 1.1)  * 0.008 * swayScale + sagY;
+    const idleZ = Math.sin(idleT * 0.55) * 0.006 * swayScale;
+
+    // Kick shake — rotation oscillation only (no vertex deform, that's stiffness job)
     let shakeX = 0, shakeY = 0, shakeZ = 0;
     if (kickShake) {
       const t = (performance.now() - kickShake.born) / kickShake.duration;
@@ -1128,10 +976,56 @@ function buildThreeScene() {
         const decay = 1 - t;
         const freq  = 28;
         const amp   = kickShake.strength * decay;
-        shakeX = Math.sin(t * freq * 1.0) * amp;
-        shakeY = Math.sin(t * freq * 1.3) * amp * 0.6;
-        shakeZ = Math.sin(t * freq * 0.8) * amp * 0.4;
+        shakeX = Math.sin(t * freq * 1.0) * amp * 0.4;
+        shakeY = Math.sin(t * freq * 1.3) * amp * 0.3;
+        shakeZ = Math.sin(t * freq * 0.8) * amp * 0.2;
       }
+    }
+
+    // ── Continuous noise-plane surface deformation (stiffness) ──
+    // stiffness=1 → no deform (rigid)
+    // stiffness=0 → heavy liquid/jelly surface noise, full gravity sag
+    if (meshes.length > 0) {
+      // Amplitude: 0 at stiff=1, grows nonlinearly toward stiff=0
+      const softness  = 1 - CFG.stiffness;            // 0→1
+      const noiseAmp  = softness * softness * 0.22 * (0.4 + intens * 0.6); // intensity boosts amplitude
+      const gravAmp   = softness * 0.055 * (0.4 + intens * 0.6);
+      // Speed: softer = slower, more like thick liquid
+      const noiseSpd  = 0.4 + softness * 0.8;        // 0.4 → 1.2
+      // Frequency: softer = lower frequency = big rolling waves; stiffer = tighter bumps
+      const noiseFreq = 1.2 + CFG.stiffness * 2.8;   // 1.2 → 4.0
+      const nt = idleT * noiseSpd;
+
+      // Extra kick impulse on top when kick fires
+      const kickBump = kickShake
+        ? (1 - (performance.now() - kickShake.born) / kickShake.duration) * kickShake.strength * 3.0
+        : 0;
+      const totalAmp = noiseAmp + kickBump * softness;
+
+      meshes.forEach(m => {
+        if (!m.userData.origPositions) return;
+        const orig = m.userData.origPositions;
+        const pos  = m.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const ox = orig[i * 3];
+          const oy = orig[i * 3 + 1];
+          const oz = orig[i * 3 + 2];
+          // Three offset noise samples per axis — smooth, coherent surface ripple
+          const dx = smoothNoise(ox * noiseFreq,       oy * noiseFreq + 1.7, oz * noiseFreq + 3.1, nt);
+          const dy = smoothNoise(ox * noiseFreq + 5.3, oy * noiseFreq,       oz * noiseFreq + 1.2, nt * 0.85);
+          const dz = smoothNoise(ox * noiseFreq + 2.9, oy * noiseFreq + 4.1, oz * noiseFreq,       nt * 1.1);
+          // Gravity: sag grows toward bottom of mesh (lower oy = more droop)
+          const grav = gravAmp * Math.max(0, 0.5 - oy);
+          pos.setXYZ(
+            i,
+            ox + dx * totalAmp,
+            oy + dy * totalAmp - grav,
+            oz + dz * totalAmp
+          );
+        }
+        pos.needsUpdate = true;
+        m.geometry.computeVertexNormals();
+      });
     }
 
     head.rotation.x = current.rotX + idleX + shakeX;
@@ -1189,11 +1083,14 @@ function buildThreeScene() {
     if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
   }
 
-  return { dispose };
+  function setFogColor(hex) {
+    scene.fog.color.setHex(hex);
+  }
+
+  return { dispose, setFogColor };
 }
 
-// Try to auto-load hardcoded stems; falls back to manual upload UI on failure
-autoLaunch();
+boot();
 </script>
 </body>
 </html>
