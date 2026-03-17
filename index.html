@@ -525,8 +525,7 @@ async function boot() {
     };
     document.addEventListener('click', window._tryResumeAudio);
     document.addEventListener('keydown', window._tryResumeAudio);
-    // touchstart intentionally excluded — swipe-to-minimize triggers it
-    // scroll/swipe curtain gesture will call _tryResumeAudio explicitly
+    document.addEventListener('touchend', window._tryResumeAudio);
   } else {
     playAll();
   }
