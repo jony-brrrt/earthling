@@ -233,10 +233,11 @@
         height: 88px;
         padding: 8px 10px;
         padding-bottom: max(8px, env(safe-area-inset-bottom));
-        gap: 6px;
+        gap: 0;
         justify-content: center;
         flex-wrap: nowrap;
         flex-shrink: 0;
+        position: relative;
       }
       #transport button {
         padding: 0;
@@ -244,8 +245,12 @@
         height: 64px;
         font-size: 10px;
         flex-shrink: 0;
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
       }
-      #stem-meters { flex: 1; min-width: 0; overflow-x: hidden; align-items: center; justify-content: center; gap: 12px; }
+      #stem-meters { width: 100%; min-width: 0; overflow-x: hidden; align-items: center; justify-content: center; gap: 12px; }
       .meter-cell { min-width: 24px; justify-content: center; }
       .meter-cell .label { font-size: 7px; }
       .meter-bar-wrap { width: 5px; height: 20px; }
