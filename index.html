@@ -18,7 +18,7 @@
       font-weight: 600;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
 
     :root {
       --bg: #0a0a0f;
@@ -112,7 +112,9 @@
       white-space: nowrap;
       line-height: 1;
     }
-    #transport button:hover { opacity: 0.7; }
+    #transport button:hover { opacity: 1; }
+    #transport button:focus { outline: none; }
+    #transport button:active { background: transparent; }
     @keyframes blink { 50% { opacity: 0.5; } }
 
     #stem-meters {
@@ -240,22 +242,25 @@
         overflow: visible;
       }
       #transport button {
+        -webkit-appearance: none;
+        appearance: none;
         padding: 0;
+        margin: 0;
         width: auto;
         height: auto;
         font-size: 28px;
         border-radius: 0;
-        background: none;
-        border: none;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
         color: #222222;
         position: absolute;
         left: 50%;
-        bottom: 100%;
+        bottom: calc(100% + 48px);
         transform: translateX(-50%);
-        margin-bottom: 20px;
         z-index: 10;
-        box-shadow: none;
-        opacity: 1;
+        line-height: 1;
       }
       #stem-meters { width: 100%; min-width: 0; overflow-x: hidden; align-items: center; justify-content: center; gap: 12px; }
       .meter-cell { min-width: 24px; justify-content: center; }
