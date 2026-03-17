@@ -431,14 +431,15 @@ let recDestNode   = null;
     prevV = v;
   }
 
-  // Scroll wheel controls the curtain
+  // Scroll wheel controls the curtain + triggers play
   document.addEventListener('wheel', e => {
     e.preventDefault();
+    if (window._tryResumeAudio) window._tryResumeAudio();
     ambienceVal = Math.min(1, Math.max(0, ambienceVal + e.deltaY / 1200));
     update();
   }, { passive: false });
 
-  // Touch swipe controls the curtain
+  // Touch swipe controls the curtain + triggers play
   let touchStartY = null;
   document.addEventListener('touchstart', e => {
     touchStartY = e.touches[0].clientY;
@@ -447,6 +448,7 @@ let recDestNode   = null;
     if (touchStartY === null) return;
     const dy = touchStartY - e.touches[0].clientY;
     touchStartY = e.touches[0].clientY;
+    if (window._tryResumeAudio) window._tryResumeAudio();
     ambienceVal = Math.min(1, Math.max(0, ambienceVal + dy / 400));
     update();
   }, { passive: true });
@@ -515,16 +517,16 @@ async function boot() {
   buildMeterUI();
 
   if (audioCtx.state === 'suspended') {
-    // Browser blocked autoplay — start on first interaction
-    const resume = async () => {
+    // Browser blocked autoplay — start on first deliberate interaction
+    window._tryResumeAudio = async () => {
+      if (audioCtx.state !== 'suspended') return;
       await audioCtx.resume();
       playAll();
-      document.removeEventListener('click', resume);
-      document.removeEventListener('keydown', resume);
     };
-    document.addEventListener('click', resume);
-    document.addEventListener('keydown', resume);
-    document.addEventListener('touchstart', resume);
+    document.addEventListener('click', window._tryResumeAudio);
+    document.addEventListener('keydown', window._tryResumeAudio);
+    // touchstart intentionally excluded — swipe-to-minimize triggers it
+    // scroll/swipe curtain gesture will call _tryResumeAudio explicitly
   } else {
     playAll();
   }
