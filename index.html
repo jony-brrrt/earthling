@@ -152,18 +152,20 @@
 
     /* ── SCROLL HINT ── */
     #scroll-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 0; right: 0;
       text-align: center;
       font-family: 'Doto', monospace;
       font-weight: 600;
       font-size: 10px;
       letter-spacing: 0.1em;
       color: #1a1a1a;
-      padding: 4px 0 2px;
-      background: transparent;
-      flex-shrink: 0;
+      pointer-events: none;
+      z-index: 10;
       transition: opacity 0.6s ease;
     }
-    #scroll-hint.hidden { opacity: 0; pointer-events: none; }
+    #scroll-hint.hidden { opacity: 0; }
 
     /* ── AMBIENCE CURTAIN ── */
     #canvas-wrap { background: #eae8e5; }
@@ -260,8 +262,8 @@
       <div id="txt-title-white">EARTHLING</div>
       <div id="txt-quote-white">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
     </div>
+    <div id="scroll-hint">-SCROLL-</div>
   </div>
-  <div id="scroll-hint">-SCROLL-</div>
   <div id="transport">
     <button id="play-pause">PLAY</button>
     <div id="stem-meters"></div>
