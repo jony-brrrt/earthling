@@ -100,21 +100,22 @@
       flex-shrink: 0;
     }
     #transport button {
-      background: #222222;
+      background: none;
       border: none;
+      outline: none;
       color: #eae8e5;
-      border-radius: 8px;
-      padding: 6px 16px;
-      font-family: inherit;
-      font-size: 18px;
+      padding: 0 12px 0 0;
+      font-family: 'Doto', monospace;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.1em;
       cursor: pointer;
-      transition: opacity 0.15s;
       white-space: nowrap;
-      line-height: 1;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
     }
-    #transport button:hover { opacity: 1; }
     #transport button:focus { outline: none; }
-    #transport button:active { background: transparent; }
+    #transport button:active { background: none; }
     @keyframes blink { 50% { opacity: 0.5; } }
 
     #stem-meters {
@@ -159,7 +160,7 @@
       transform: translateX(-50%);
       font-family: 'Doto', monospace;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 12px;
       letter-spacing: 0.1em;
       cursor: pointer;
       z-index: 3;
@@ -171,8 +172,8 @@
       padding: 0;
       margin: 0;
     }
-    #play-btn-dark  { color: #222222; bottom: 76px; }
-    #play-btn-white { color: #eae8e5; bottom: 76px; }
+    #play-btn-dark  { color: #222222; bottom: calc(10% + 36px); }
+    #play-btn-white { color: #eae8e5; bottom: calc(10% + 36px); }
 
     /* ── SCROLL HINTS ── */
     #scroll-down, #scroll-up-white {
@@ -313,7 +314,7 @@
     </div>
   </div>
   <div id="transport">
-    <button id="play-pause" style="display:none">▶</button>
+    <button id="play-pause">PLAY</button>
     <div id="stem-meters"></div>
   </div>
 </div>
