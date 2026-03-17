@@ -153,19 +153,31 @@
     /* ── SCROLL HINT ── */
     #scroll-hint {
       position: absolute;
-      bottom: 8px;
+      top: 14px;
       left: 0; right: 0;
       text-align: center;
       font-family: 'Doto', monospace;
       font-weight: 600;
-      font-size: 10px;
+      font-size: 14px;
       letter-spacing: 0.1em;
       color: #1a1a1a;
       pointer-events: none;
-      z-index: 10;
+      z-index: 3;
       transition: opacity 0.6s ease;
     }
     #scroll-hint.hidden { opacity: 0; }
+    #scroll-hint-white {
+      position: absolute;
+      top: 14px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Doto', monospace;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      pointer-events: none;
+    }
 
     /* ── AMBIENCE CURTAIN ── */
     #canvas-wrap { background: #eae8e5; }
@@ -257,12 +269,13 @@
     <div id="ambience-curtain"></div>
     <div id="txt-title">EARTHLING</div>
     <div id="txt-quote">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
+    <div id="scroll-hint">-SCROLL DOWN-</div>
     <!-- White copies clipped to the curtain region -->
     <div id="txt-clip">
       <div id="txt-title-white">EARTHLING</div>
       <div id="txt-quote-white">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
+      <div id="scroll-hint-white">-SCROLL DOWN-</div>
     </div>
-    <div id="scroll-hint">-SCROLL-</div>
   </div>
   <div id="transport">
     <button id="play-pause">PLAY</button>
@@ -394,12 +407,24 @@ let recDestNode   = null;
     return v > quoteTopFrac; // curtain bottom edge is below quote top
   }
 
-  const scrollHint = document.getElementById('scroll-hint');
+  const scrollHint      = document.getElementById('scroll-hint');
+  const scrollHintWhite = document.getElementById('scroll-hint-white');
+  let scrollHintOver = false;
+
+  function setScrollText(html) {
+    scrollHint.innerHTML = html;
+    scrollHintWhite.innerHTML = html;
+  }
+
+  function isCurtainOverScroll(v) {
+    const wrapRect   = document.getElementById('canvas-wrap').getBoundingClientRect();
+    const hintRect   = scrollHint.getBoundingClientRect();
+    const hintTopFrac = (hintRect.top - wrapRect.top) / wrapRect.height;
+    return v > hintTopFrac;
+  }
 
   function update() {
     const v = ambienceVal;
-
-    if (v >= 0.3) scrollHint.classList.add('hidden');
 
     curtain.style.transform = `translateY(${(v - 1) * 100}%)`;
     clip.style.clipPath = `inset(0 0 ${(1 - v) * 100}% 0)`;
@@ -411,15 +436,21 @@ let recDestNode   = null;
       threeInstance.setFogColor((r << 16) | (g << 8) | b);
     }
 
+    // Quote swap
     const nowOver = isCurtainOverQuote(v);
-
-    // Every time the curtain edge crosses the quote (in either direction) → next phrase
     if (nowOver !== curtainOver) {
       quoteIdx = (quoteIdx + 1) % shuffled.length;
       setQuote(shuffled[quoteIdx]);
     }
-
     curtainOver = nowOver;
+
+    // Scroll hint: swap DOWN ↔ UP when curtain crosses it
+    const hintOver = isCurtainOverScroll(v);
+    if (hintOver !== scrollHintOver) {
+      setScrollText(hintOver ? '-SCROLL UP-' : '-SCROLL DOWN-');
+    }
+    scrollHintOver = hintOver;
+
     prevV = v;
   }
 
