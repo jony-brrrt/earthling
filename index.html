@@ -151,6 +151,21 @@
     .meter-bar-fill { width: 100%; border-radius: 4px; }
 
 
+    /* ── PLAY BUTTON OVERLAY (mobile only, shown via media query) ── */
+    .play-btn-overlay {
+      display: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 3;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #play-btn-dark  { color: #222222; bottom: 76px; }
+    #play-btn-white { color: #eae8e5; bottom: 76px; }
+
     /* ── SCROLL HINTS ── */
     #scroll-down, #scroll-up-white {
       position: absolute;
@@ -214,6 +229,8 @@
     /* ── MOBILE ── */
     @media (max-width: 768px) {
       #visualizer { min-height: 0; }
+      .play-btn-overlay { display: block; }
+      #transport button { display: none !important; }
 
       /* Text: smaller, repositioned for portrait */
       #txt-title, #txt-title-white {
@@ -278,15 +295,17 @@
     <div id="txt-title">EARTHLING</div>
     <div id="txt-quote">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
     <div id="scroll-down">SCROLL DOWN</div>
+    <div id="play-btn-dark" class="play-btn-overlay">▶</div>
     <!-- White copies clipped to the curtain region -->
     <div id="txt-clip">
       <div id="txt-title-white">EARTHLING</div>
       <div id="txt-quote-white">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
       <div id="scroll-up-white">SCROLL UP</div>
+      <div id="play-btn-white" class="play-btn-overlay">▶</div>
     </div>
   </div>
   <div id="transport">
-    <button id="play-pause">▶</button>
+    <button id="play-pause" style="display:none">▶</button>
     <div id="stem-meters"></div>
   </div>
 </div>
@@ -568,7 +587,7 @@ function playAll() {
     src.start(0, startOffset % s.buffer.duration);
     s.source = src;
   });
-  document.getElementById('play-pause').textContent = '⏸';
+  setPlaySymbol('⏸');
 }
 
 function pauseAll() {
@@ -582,12 +601,25 @@ function pauseAll() {
       s.source = null;
     }
   });
-  document.getElementById('play-pause').textContent = '▶';
+  setPlaySymbol('▶');
 }
 
-document.getElementById('play-pause').addEventListener('click', () => {
+function setPlaySymbol(sym) {
+  document.getElementById('play-pause').textContent = sym;
+  const d = document.getElementById('play-btn-dark');
+  const w = document.getElementById('play-btn-white');
+  if (d) d.textContent = sym;
+  if (w) w.textContent = sym;
+}
+
+function togglePlay() {
+  if (window._tryResumeAudio) window._tryResumeAudio();
   if (playing) pauseAll(); else playAll();
-});
+}
+
+document.getElementById('play-pause').addEventListener('click', togglePlay);
+document.getElementById('play-btn-dark').addEventListener('click', togglePlay);
+document.getElementById('play-btn-white').addEventListener('click', togglePlay);
 
 // ─────────────────────────────────────────────
 //  METERS
