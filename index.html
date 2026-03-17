@@ -76,7 +76,7 @@
       font-weight: 800;
       font-size: 24px;
       top: 50%;
-      right: 70%;
+      left: 6%;
     }
     #txt-quote {
       font-weight: 600;
@@ -198,7 +198,7 @@
       font-weight: 800;
       font-size: 24px;
       top: 50%;
-      right: 70%;
+      left: 6%;
     }
     #txt-quote-white {
       font-weight: 600;
@@ -212,29 +212,31 @@
 
     /* ── MOBILE ── */
     @media (max-width: 768px) {
+      #visualizer { min-height: 0; }
+
       /* Text: smaller, repositioned for portrait */
       #txt-title, #txt-title-white {
         font-size: 13px;
         top: 42%;
-        right: auto;
-        left: 10px;
+        left: 14px;
       }
       #txt-quote, #txt-quote-white {
         font-size: 10px;
-        bottom: 22%;
+        bottom: 10%;
         right: 10px;
         left: auto;
-        width: 48%;
+        width: 55%;
       }
 
       /* Transport: slim, always centered */
       #transport {
         height: 44px;
         padding: 4px 10px;
-        padding-bottom: max(4px, env(safe-area-inset-bottom));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
         gap: 6px;
         justify-content: center;
         flex-wrap: nowrap;
+        flex-shrink: 0;
       }
       #transport button {
         padding: 6px 14px;
@@ -367,7 +369,7 @@ let recDestNode   = null;
     'BEND METALS',
     'GET PAID',
     'EAT A PIZZA',
-    'PET A CAT'
+    'PET A CAT',
   ];
 
   // Shuffle all except first, keep index 0 first
@@ -522,6 +524,7 @@ async function boot() {
     };
     document.addEventListener('click', resume);
     document.addEventListener('keydown', resume);
+    document.addEventListener('touchstart', resume);
   } else {
     playAll();
   }
