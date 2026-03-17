@@ -149,63 +149,21 @@
     }
     .meter-bar-fill { width: 100%; border-radius: 4px; }
 
-    /* ── CONFIG PANEL ── */
-    #cfg-panel {
-      position: absolute;
-      top: 12px; right: 12px;
-      width: 260px;
-      background: #222222;
-      border: 1px solid #333;
-      border-radius: 14px;
-      overflow: hidden;
-      z-index: 100;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+
+    /* ── SCROLL HINT ── */
+    #scroll-hint {
+      text-align: center;
       font-family: 'Doto', monospace;
       font-weight: 600;
-      color: #ffffff;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: #888;
+      padding: 4px 0 2px;
+      background: #222222;
+      flex-shrink: 0;
+      transition: opacity 0.6s ease;
     }
-    #cfg-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; cursor: pointer; user-select: none;
-      border-bottom: 1px solid #333;
-      font-size: 11px; letter-spacing: 0.1em; color: #ffffff;
-    }
-    #cfg-header:hover { color: #ffffff; opacity: 0.8; }
-    #cfg-header span { color: #ffffff; font-size: 13px; }
-    #cfg-body { padding: 14px; display: flex; flex-direction: column; gap: 13px; }
-    #cfg-body.hidden { display: none; }
-    .cfg-group { display: flex; flex-direction: column; gap: 6px; }
-    .cfg-label {
-      font-size: 10px; color: #ffffff;
-      text-transform: uppercase; letter-spacing: 0.09em;
-      display: flex; justify-content: space-between;
-    }
-    .cfg-label .val { color: #ffffff; }
-    input[type=range] {
-      -webkit-appearance: none; appearance: none;
-      width: 100%; height: 3px; border-radius: 2px;
-      background: #444; outline: none; cursor: pointer;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 13px; height: 13px; border-radius: 50%;
-      background: #ffffff; cursor: pointer;
-    }
-    input[type=range]::-moz-range-thumb {
-      width: 13px; height: 13px; border-radius: 50%;
-      background: #ffffff; border: none; cursor: pointer;
-    }
-    /* hue slider special track */
-    #sl-hue {
-      background: linear-gradient(to right,
-        hsl(0,70%,55%), hsl(45,70%,55%), hsl(90,70%,55%),
-        hsl(135,70%,55%), hsl(180,70%,55%), hsl(225,70%,55%),
-        hsl(270,70%,55%), hsl(315,70%,55%), hsl(360,70%,55%));
-      height: 6px; border-radius: 3px;
-    }
-    #sl-hue::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
-    #sl-hue::-moz-range-thumb     { background: #fff; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
-    .cfg-divider { height: 1px; background: var(--border); margin: 0 -14px; }
+    #scroll-hint.hidden { opacity: 0; pointer-events: none; }
 
     /* ── AMBIENCE CURTAIN ── */
     #canvas-wrap { background: #eae8e5; }
@@ -253,27 +211,6 @@
 
     /* ── MOBILE ── */
     @media (max-width: 768px) {
-      /* Config panel: compact, top strip */
-      #cfg-panel {
-        top: 6px; right: 6px; left: 6px;
-        width: auto;
-        border-radius: 10px;
-      }
-      #cfg-header {
-        padding: 7px 10px;
-        font-size: 9px;
-        letter-spacing: 0.08em;
-      }
-      #cfg-header span { font-size: 10px; }
-      #cfg-body {
-        padding: 8px 10px;
-        gap: 8px;
-      }
-      .cfg-label { font-size: 8px; letter-spacing: 0.07em; }
-      input[type=range] { height: 3px; }
-      input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
-      input[type=range]::-moz-range-thumb { width: 20px; height: 20px; }
-
       /* Text: smaller, repositioned for portrait */
       #txt-title, #txt-title-white {
         font-size: 13px;
@@ -323,32 +260,8 @@
       <div id="txt-title-white">EARTHLING</div>
       <div id="txt-quote-white">YOU CAN'T<br>REALLY CONTROL<br>ANYTHING</div>
     </div>
-    <div id="cfg-panel">
-      <div id="cfg-header">PARAMETERS <span id="cfg-toggle">▾</span></div>
-      <div id="cfg-body">
-        <div class="cfg-group">
-          <div class="cfg-label">Vibration <span class="val" id="lbl-vibration">0.50</span></div>
-          <input type="range" id="sl-vibration" min="0" max="1" step="0.01" value="0.5" />
-        </div>
-        <div class="cfg-group">
-          <div class="cfg-label">Stiffness <span class="val" id="lbl-stiffness">0.50</span></div>
-          <input type="range" id="sl-stiffness" min="0" max="1" step="0.01" value="0.5" />
-        </div>
-        <div class="cfg-group">
-          <div class="cfg-label">Hue <span class="val" id="lbl-hue">0°</span></div>
-          <input type="range" id="sl-hue" min="0" max="360" step="1" value="0" />
-        </div>
-        <div class="cfg-group">
-          <div class="cfg-label">Intensity <span class="val" id="lbl-intensity">0.75</span></div>
-          <input type="range" id="sl-intensity" min="0" max="1" step="0.01" value="0.75" />
-        </div>
-        <div class="cfg-group">
-          <div class="cfg-label">Ambience <span class="val" id="lbl-ambience">0%</span></div>
-          <input type="range" id="sl-ambience" min="0" max="1" step="0.01" value="0" />
-        </div>
-      </div>
-    </div>
   </div>
+  <div id="scroll-hint">-SCROLL-</div>
   <div id="transport">
     <button id="play-pause">PLAY</button>
     <div id="stem-meters"></div>
@@ -412,10 +325,10 @@ const STEM_COLORS = {
 // ─────────────────────────────────────────────
 const CFG = {
   // user controls
-  vibration:  0.5,   // 0–1 → kick shake strength multiplier
-  stiffness:  0.5,   // 0–1 → 0=jelly/floppy, 1=rigid (maps pose spring + mesh stiffness)
-  hue:        0,     // 0–360 → hue rotation applied to all colors
-  intensity:  0.75,  // 0–1 → master volume + overall animation scale
+  vibration:  0.81,  // 0–1 → kick shake strength multiplier
+  stiffness:  0.95,  // 0–1 → 0=jelly/floppy, 1=rigid (maps pose spring + mesh stiffness)
+  hue:        143,   // 0–360 → hue rotation applied to all colors
+  intensity:  0.66,  // 0–1 → master volume + overall animation scale
 
   // internal derived (recomputed from user controls each frame)
   sensitivity: 1.0,
@@ -436,29 +349,10 @@ let startTime     = 0;
 let recDestNode   = null;
 
 // ─────────────────────────────────────────────
-//  CONFIG PANEL
+//  AMBIENCE CURTAIN
 // ─────────────────────────────────────────────
-
-
-function bindSlider(id, key, fmt) {
-  const sl  = document.getElementById(id);
-  const lbl = document.getElementById('lbl-' + key);
-  sl.addEventListener('input', () => {
-    const v = parseFloat(sl.value);
-    CFG[key] = v;
-    lbl.textContent = fmt ? fmt(v) : v.toFixed(2);
-  });
-}
-bindSlider('sl-vibration',  'vibration');
-bindSlider('sl-stiffness',  'stiffness');
-bindSlider('sl-hue',        'hue',       v => Math.round(v) + '°');
-bindSlider('sl-intensity',  'intensity');
-// intensity has no audio role — purely animation vibrancy
-
-// Ambience curtain slider
 (function() {
-  const sl      = document.getElementById('sl-ambience');
-  const lbl     = document.getElementById('lbl-ambience');
+  let ambienceVal = 0;
   const curtain = document.getElementById('ambience-curtain');
   const clip    = document.getElementById('txt-clip');
 
@@ -498,9 +392,12 @@ bindSlider('sl-intensity',  'intensity');
     return v > quoteTopFrac; // curtain bottom edge is below quote top
   }
 
+  const scrollHint = document.getElementById('scroll-hint');
+
   function update() {
-    const v = parseFloat(sl.value);
-    lbl.textContent = Math.round(v * 100) + '%';
+    const v = ambienceVal;
+
+    if (v >= 0.3) scrollHint.classList.add('hidden');
 
     curtain.style.transform = `translateY(${(v - 1) * 100}%)`;
     clip.style.clipPath = `inset(0 0 ${(1 - v) * 100}% 0)`;
@@ -524,13 +421,10 @@ bindSlider('sl-intensity',  'intensity');
     prevV = v;
   }
 
-  sl.addEventListener('input', update);
-
   // Scroll wheel controls the curtain
   document.addEventListener('wheel', e => {
     e.preventDefault();
-    const step = e.deltaY / 1200;
-    sl.value = Math.min(1, Math.max(0, parseFloat(sl.value) + step));
+    ambienceVal = Math.min(1, Math.max(0, ambienceVal + e.deltaY / 1200));
     update();
   }, { passive: false });
 
@@ -543,26 +437,14 @@ bindSlider('sl-intensity',  'intensity');
     if (touchStartY === null) return;
     const dy = touchStartY - e.touches[0].clientY;
     touchStartY = e.touches[0].clientY;
-    const step = dy / 400;
-    sl.value = Math.min(1, Math.max(0, parseFloat(sl.value) + step));
+    ambienceVal = Math.min(1, Math.max(0, ambienceVal + dy / 400));
     update();
   }, { passive: true });
+
 
   update();
 })();
 
-// Collapse config panel by default on mobile
-if (window.innerWidth <= 768) {
-  document.getElementById('cfg-body').classList.add('hidden');
-  document.getElementById('cfg-toggle').textContent = '▸';
-}
-document.getElementById('cfg-header').addEventListener('click', () => {
-  const body = document.getElementById('cfg-body');
-  body.classList.toggle('hidden');
-  const isOpen = !body.classList.contains('hidden');
-  document.getElementById('cfg-toggle').textContent = isOpen ? '▾' : '▸';
-  if (threeInstance) threeInstance.setZoom(isOpen);
-});
 
 // ─────────────────────────────────────────────
 //  AUTO-LAUNCH (hardcoded stems)
